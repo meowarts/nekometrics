@@ -1,0 +1,5 @@
+node_modules
+.next
+JMDictFull.xml
+db.json
+vendor

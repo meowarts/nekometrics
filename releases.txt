@@ -1,0 +1,176 @@
+== 0.7.4 - September 11, 2022 ==
+* Timeout after 10 seconds with all services.
+
+== 0.7.2 - July 21, 2022 ==
+* Facebook/Insta can get unlinked (when things happened on the accounts), let's try to refresh it.
+
+== 0.6.9 - October 12nd, 2021 ==
+* Add an error icon to the widget when there is an error, or not updated for more than 2 days.
+* On Force Refresh, if successful, re-enable the service.
+
+== 0.6.7 - October 1st, 2021 ==
+* Handle timeouts and clean old jobs.
+
+== 0.6.6 - August 29th, 2021 ==
+* Added Sentry for catching errors.
+
+== 0.6.5 - June 18th, 2021 ==
+* Better support of accounts and users.
+* Expiry dates and all that. Let's see.
+
+== 0.6.3 - June 15th, 2021 ==
+* Admin page with users and dashboards.
+* Admin can access dashboards for debugging.
+* Updated packages, except React.
+
+== 0.5.9 - June 12th, 2021 ==
+* Got pages_read_engagement permission from Facebook officially.
+
+== 0.5.8 - June 12th, 2021 ==
+* Page Likes should work with Daily Refresh.
+* A lot of refactoring, use of constants, etc.
+* Simplifying the naming.
+
+== 0.5.6 - June 11th, 2021 ==
+* Added the new Page Likes.
+* Renamed all the widgets' types.
+* Cleaned a few things in the code.
+
+== 0.5.5 - June 10th, 2021 ==
+* Trying to fix bugs and issues related to Facebook.
+* Twitter should disable the auto refresh if nothing is returned.
+
+== 0.5.4 - June 8th, 2021 ==
+* Attempt to disable widgets and services on fail.
+* I REALLY HATE FACEBOOK. API SUCKS. SYSTEM SUCKS. 
+
+== 0.5.3 - June 2nd, 2021 ==
+* Extra debug in Facebook API.
+* Change the way the modals for services like EDD and WC are handled.
+
+== 0.5.2 - May 30th, 2021 ==
+* Fix the links in the sidebar.
+
+== 0.5.1 - May 29th, 2021 ==
+* Oauth link click was not working.
+* Oauth redirection was also having missing references.
+
+== 0.4.8 - May 28th, 2021 ==
+* Demo now fully works.
+* Contact page works.
+* Pricing details lead to contact.
+* Works with Helpscout.
+* Many little enhancements.
+* Nice backgrounds and small thumbs.
+
+== 0.4.6 - May 21th, 2021 ==
+* Favicon.
+* Improved design, demo.
+
+== 0.4.4 - May 19th, 2021 ==
+* New widget for Page Likes.
+* Smoother modules and modals.
+
+== 0.4.1 - May 15th, 2021 ==
+* The new UI is in prod.
+
+== 0.3.7 - May 15th, 2021 ==
+* Staging and dev both on Digital Ocean.
+* New version looks ready, should merge soon!
+* This commit was to debug a FB tester who is supposed to allow Nekometrics.
+
+== 0.3.6 - April 13th, 2021 ==
+* Now works with .env environment variables.
+* Production env still at Digital Ocean, with local environment values in a .env.local.
+* Staging env at Vercel.
+
+== 0.3.5 - April 4th, 2021 ==
+* Added pages_show_list as a required permission for Facebook.
+
+== 0.3.4 - March 2nd, 2021 ==
+* Little fix for the Mailchimp widget (was using dollars for instead of subscribers);
+* Little fix for the Twitter widget (was using dollars for instead of subscribers);
+
+== 0.3.2 - January 26th, 2021 ==
+* Better information about last refresh (from services) and last reload.
+* Settings for chart, and support for Area, Line, and Bar.
+* Images for tutorial.
+
+== 0.2.9 - January 25th, 2021 ==
+* Fix the bug where refreshedOn was updated very time there was a getMetrics.
+
+== 0.2.8 - January 20th, 2021 ==
+* New debug tab for admin in the widgets settings.
+
+== 0.2.7 - January 18th, 2021 ==
+* Handle the enabled/disabled in case of issues.
+
+== 0.2.6 - January 15th, 2021 ==
+* Add titles automatically for all widgets.
+* Simpler assistant.
+* Better service refresh.
+* Silent refresh (after first dashboard load).
+
+== 0.2.5 - January 14th, 2021 ==
+* Better UI and responsivity.
+* Added Auto Refresh.
+* CountUp to animate the numbers.
+* Fake widgets.
+
+== 0.2.1 - January 13th, 2021 ==
+* Works on Mobile (for testing).
+
+== 0.1.9 - January 10th, 2021 ==
+* Update dashboard, everything is more stable.
+* Changed a few things in the UI.
+
+== 0.1.8 - January 9th, 2021 ==
+* Create new dashboards.
+* Ability to move widgets between dashboards.
+
+== 0.1.7 - November 29th, 2020 ==
+* New logo thanks to Takefuji-san!
+
+== 0.1.6 - November 22th, 2020 ==
+* Added WooCommerce Service, and Historical Sales Widget.
+
+== 0.1.5 - October 23th, 2020 ==
+* New image by Takefuji.
+
+== 0.1.4 - October 10th, 2020 ==
+* FriendlyError when data is missing, with the information about the serviceId or igBusineddId.
+
+== 0.1.3 - October 9th, 2020 ==
+* Now use FriendlyError instead of all those errors. FriendlyErrors means that it can be displayed to the end-user.
+* Fixed a lot of little issues related to the _id missing from the service (why wasn't I using await for the Mongo calls?).
+* Eslint works much better now.
+* Updated to latest packages.
+
+== 0.1.2 - October 6th, 2020 ==
+* Attempt to better logging of errors. Oauth errors are very hard to debug!
+
+== 0.1.0 - September 22, 2020 ==
+* Google Analytics for... Nekometrics (it wasn't there...).
+
+== 0.0.8 - September 21, 2020 ==
+* Fixed account creation (it was not working).
+* Added an icon Dashboard after login.
+
+== 0.0.7 - September 13, 2020 ==
+* Update personal information.
+* Added accountType, maxWidgets, expireOn, accessedOn.
+* Invitation Code (GO_METRICS_2020 for customers, or TEAM_MEOW_2020, for friends).
+
+== 0.0.6 - September 1, 2020 ==
+* Google approved it! It now can be used by anyone!
+* Replaced the logo by Nekometrics.
+
+== 0.0.4 - August 31, 2020 ==
+* Much better UI and new texts.
+* Google Button.
+
+== 0.0.2 - August 30, 2020 ==
+* Added Twitter (and Followers Growth).
+
+== 0.0.1 - June 23, 2020 ==
+* Fix the UI which couldn't show multiply Instagram accounts.
