@@ -4,6 +4,7 @@ const { google: Google } = require('googleapis');
 const GoogleScopes = 'https://www.googleapis.com/auth/analytics.readonly';
 
 const CFG = require('~/config');
+import { analyticsadmin } from 'googleapis/build/src/apis/analyticsadmin';
 import { FriendlyError } from './errors';
 import { fetchIt } from '~/libs/helpers';
 
@@ -53,6 +54,7 @@ class GoogleService {
 				updatedOn: now
 			}
 			const { username, accounts } = await this.getUserAndAccounts(service);
+			console.log('properties : ', accounts);
 			const websitesCount = accounts.reduce((a, b) =>  a + b.properties.length, 0);
 			service.name = `Google Analytics (${websitesCount} websites)`;
 			service.data.username = username;
@@ -105,6 +107,7 @@ class GoogleService {
 	getUserAndAccounts = async (service, oauth = null) => {
 		oauth = oauth ? oauth : this.createOauthClient(service);
 		const analytics = Google.analytics({ version: 'v3' });
+		const analyticsadmin = Google.analyticsadmin({ version: 'v1alpha' });
 
 		// Username
 		let res = await analytics.management.accounts.list({ auth: oauth });
@@ -115,21 +118,32 @@ class GoogleService {
 		const username = res.data.username;
 
 		// Accounts
-		res = await analytics.management.accountSummaries.list({ auth: oauth });
+		res = await analyticsadmin.accountSummaries.list({ auth: oauth });
+		console.log('accountSummaries: ', res.data.accountSummaries[0]);
+
 		if (res.status !== 200) {
 			console.log('getAccountInfo', res.status, res.statusText);
 			throw new FriendlyError('Cannot get the list of accounts.');
 		}
-		const accounts = res.data.items.map(x => ({
-			accountId: x.id,
-			name: x.name,
-			properties: x.webProperties.map(y => ({
-				propertyId: y.id,
-				name: y.name,
-				url: y.websiteUrl,
-				profiles: y.profiles.map(z => ({ profileId: z.id, name: z.name }))
+
+		const accounts = await Promise.all(res.data.accountSummaries.map(async x =>  ({
+			accountId: x.account.split('/')[1],
+			name: x.displayName,
+			properties: await Promise.all(x.propertySummaries.map(async y => {
+				let dataStreamsRes = await analyticsadmin.properties.dataStreams.list({ auth: oauth, parent: y.property });
+				return {
+					propertyId: y.property.split('/')[1],
+					name: y.displayName,
+					dataStreams: dataStreamsRes.data.dataStreams.map( z => ({ 
+						dataStreamId : z.name.split('/')[3], 
+						name: z.displayName,
+						url: z.webStreamData.defaultUri,
+					})),
+				};
 			}))
-		}));
+		})));
+
+		console.log('Accounts : ', accounts[0].properties[0]);
 		return { username, accounts };
 	}
 
@@ -149,11 +163,11 @@ class GoogleService {
 	}
 
 	getAnalyticsVisits = async (params) => {
-		const { serviceId, profileId } = params;
+		const { serviceId, propertyId } = params;
 		if (!serviceId)
 			throw new FriendlyError('Not linked to a data source yet.');
-		if (!profileId)
-			throw new FriendlyError('A Google Analytics profile has to be selected.');
+		if (!propertyId)
+			throw new FriendlyError('A Google Analytics Property has to be selected.');
 		const service = await this.db.collection('Service').findOne({ _id: ObjectID(serviceId) });
 		if (!service)
 			throw new FriendlyError('The service it was linked to does not exist anymore.');
@@ -164,24 +178,25 @@ class GoogleService {
 		const dateTo = DayJS().add(-1, 'day').startOf('day').toDate();
 		let metrics_columns = [{ 
 			//expression: 'ga:users',
-			expression: 'ga:sessions'
+			name: 'sessions',
+			//expression: 'ga:sessions'
 		}];
 
 		// Calculate nice dimension and date filters
 		let months = DayJS(dateTo).diff(DayJS(fromDate), "month"); 
 		let days = DayJS(dateTo).diff(DayJS(fromDate), "day"); 
-		let dimension = 'ga:hour';
+		let dimension = 'hour';
 		let by = 'hour';
 		if (months > 12) {
-			dimension = 'ga:year';
+			dimension = 'year';
 			by = 'year';
 		}
 		else if (months > 1) {
-			dimension = 'ga:yearMonth';
+			dimension = 'yearMonth';
 			by = 'month';
 		}
 		else if (days > 1) {
-			dimension = 'ga:date';
+			dimension = 'date';
 			by = 'day';
 		}
 		let dimensions_rows = [{ name: dimension }]; 
@@ -195,44 +210,48 @@ class GoogleService {
 		// https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/
 		// API batchGet: https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet
 		// Tutorial with many examples: https://flaviocopes.com/google-analytics-api-nodejs/
-		let analytics = Google.analyticsreporting('v4');
+		let analyticsdata = Google.analyticsdata('v1beta');
 		let pageToken = null;
 		let rows = [];
 		try {
 			// Query
 			do {
 				var req = {
-					reportRequests: [{
-						viewId: 'ga:' + profileId,
-						dateRanges: date_filters,
-						metrics: metrics_columns,
-						dimensions: dimensions_rows,
-						pageToken: pageToken
-						//pageSize: 10
-						//orderBys: sort
-					}],
+					dateRanges: date_filters,
+					metrics: metrics_columns,
+					dimensions: dimensions_rows,
+					//pageToken: pageToken
+					//pageSize: 10
+					//orderBys: sort
 				};
-				let data = await analytics.reports.batchGet({ auth: oauth, resource: req });
+
+				let data = await analyticsdata.properties.runReport({ 
+					auth: oauth,
+					property: `properties/${propertyId}`,
+					requestBody: req
+				});
+
+				//console.log('Response : ', data);
 
 				// Result
-				const report = data.data.reports[0];
-				const reportData = report.data;
+				const reportData = data.data;
 				if (reportData.rows) {
 					rows = [ ...rows, ...reportData.rows ];
 				}
 				//console.log('Dates', date_filters);
 				//console.log('Rows', reportData.rows.length);
-				pageToken = report.nextPageToken;
+				//pageToken = report.nextPageToken;
 			} while (pageToken);
 
 			return { 
 				by: by, 
 				data: rows.map(x => { 
-					return { date: x.dimensions[0], value: parseInt(x.metrics[0].values[0]) }
+					return { date: x.dimensionValues[0].value, value: parseInt(x.metricValues[0].value) }
 				})
 			};
 		}
 		catch (err) {
+			console.log('catch error', err);
 			if (err.constructor.name === 'GaxiosError') {
 				if (err.errors && err.errors.length) {
 					const googleError = err.errors[0];

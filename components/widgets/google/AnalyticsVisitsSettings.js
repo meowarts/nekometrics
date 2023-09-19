@@ -25,7 +25,7 @@ const AnalyticsVisitsSettings = (props) => {
   // Settings
   const [name, setName] = useState(widget.name ? widget.name : '');
   const [serviceId, setServiceId] = useState(settings.serviceId ? settings.serviceId : '');
-  const [profileId, setProfileId] = useState(settings.profileId ? settings.profileId : '');
+  const [propertyId, setDataStreamId] = useState(settings.propertyId ? settings.propertyId : '');
   const [color, setColor] = useState(settings.color ? settings.color : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'week', length: 2 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'bar' });
@@ -41,9 +41,9 @@ const AnalyticsVisitsSettings = (props) => {
     if (service && service.data && service.data.accounts) {
       for (let account of service.data.accounts) {
         for (let property of account.properties) {
-          for (let profile of property.profiles) {
-            const { profileId, name } = profile;
-            webProfiles.push({ profileId, name: property.name + ': ' + name });
+          for (let dataStream of property.dataStreams) {
+            const { name } = dataStream;
+            webProfiles.push({ propertyId: property.propertyId, name: property.name + ': ' + name });
           }
         }
       }
@@ -53,20 +53,20 @@ const AnalyticsVisitsSettings = (props) => {
 
   // Save all Settings
   const onSave = () => {
-    const newSettings = { serviceId, profileId, color, period, chart };
+    const newSettings = { serviceId, propertyId, color, period, chart };
     props.onUpdateWidget(name, newSettings);
     props.onClose();
   }
 
   // Set default name
   useEffect(() => {
-    if (!name && profileId) {
-      const webProfile = webProfiles.find(x => x.profileId === profileId);
+    if (!name && propertyId) {
+      const webProfile = webProfiles.find(x => x.propertyId === propertyId);
       if (webProfile) {
         setName(webProfile.name);
       }
     }
-  }, [ profileId ]);
+  }, [ propertyId ]);
 
   return (
     <>
@@ -82,9 +82,9 @@ const AnalyticsVisitsSettings = (props) => {
           onExpandPanel={(ev, open) => expandPanel(open ? 'servicePanel' : false)} 
           serviceId={serviceId} onSetServiceId={setServiceId}>
           <FormControl>
-              <Select value={profileId} onChange={(ev) => setProfileId(ev.target.value)}>
+              <Select value={propertyId} onChange={(ev) => setDataStreamId(ev.target.value)}>
                 {webProfiles.map((x) => 
-                  <MenuItem className={css.googleWebProfileItem} key={x.profileId} value={x.profileId}>{x.name}</MenuItem>
+                  <MenuItem className={css.googleWebProfileItem} key={x.propertyId} value={x.propertyId}>{x.name}</MenuItem>
                 )}
               </Select>
               <FormHelperText>Select the website.</FormHelperText>
