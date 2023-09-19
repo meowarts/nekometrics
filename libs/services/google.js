@@ -119,7 +119,7 @@ class GoogleService {
 
 		// Accounts
 		res = await analyticsadmin.accountSummaries.list({ auth: oauth });
-		console.log('accountSummaries: ', res.data.accountSummaries[0]);
+		console.log('accountSummaries: ', res.data.accountSummaries);
 
 		if (res.status !== 200) {
 			console.log('getAccountInfo', res.status, res.statusText);
@@ -131,13 +131,25 @@ class GoogleService {
 			name: x.displayName,
 			properties: await Promise.all(x.propertySummaries.map(async y => {
 				let dataStreamsRes = await analyticsadmin.properties.dataStreams.list({ auth: oauth, parent: y.property });
+				console.log('dataStreams: ', dataStreamsRes.data.dataStreams);
 				return {
 					propertyId: y.property.split('/')[1],
 					name: y.displayName,
 					dataStreams: dataStreamsRes.data.dataStreams.map( z => ({ 
 						dataStreamId : z.name.split('/')[3], 
 						name: z.displayName,
-						url: z.webStreamData.defaultUri,
+
+						// WebStreamData
+						measurementId: z.webStreamData?.measurementId,
+						url: z.webStreamData?.defaultUri,
+
+						// firebaseAppStreamData
+						firebaseAppId: z.iosAppStreamData?.firebaseAppId ?? z.androidAppStreamData?.firebaseAppId,
+						// iosAppStreamData
+						bundleId: z.iosAppStreamData?.bundleId,
+						// androidAppStreamData
+						packageName: z.androidAppStreamData?.packageName,
+
 					})),
 				};
 			}))
