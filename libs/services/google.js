@@ -4,7 +4,6 @@ const { google: Google } = require('googleapis');
 const GoogleScopes = 'https://www.googleapis.com/auth/analytics.readonly';
 
 const CFG = require('~/config');
-import { analyticsadmin } from 'googleapis/build/src/apis/analyticsadmin';
 import { FriendlyError } from './errors';
 import { fetchIt } from '~/libs/helpers';
 
