@@ -53,7 +53,7 @@ class GoogleService {
 				updatedOn: now
 			}
 			const { username, accounts } = await this.getUserAndAccounts(service);
-			console.log('properties : ', accounts);
+			//console.log('properties : ', accounts);
 			const websitesCount = accounts.reduce((a, b) =>  a + b.properties.length, 0);
 			service.name = `Google Analytics (${websitesCount} websites)`;
 			service.data.username = username;
@@ -111,17 +111,17 @@ class GoogleService {
 		// Username
 		let res = await analytics.management.accounts.list({ auth: oauth });
 		if (res.status !== 200) {
-			console.log('getAccountInfo', res.status, res.statusText);
+			//console.log('getAccountInfo', res.status, res.statusText);
 			throw new FriendlyError('Cannot get the list of accounts.');
 		}
 		const username = res.data.username;
 
 		// Accounts
 		res = await analyticsadmin.accountSummaries.list({ auth: oauth });
-		console.log('accountSummaries: ', res.data.accountSummaries);
+		//console.log('accountSummaries: ', res.data.accountSummaries);
 
 		if (res.status !== 200) {
-			console.log('getAccountInfo', res.status, res.statusText);
+			//console.log('getAccountInfo', res.status, res.statusText);
 			throw new FriendlyError('Cannot get the list of accounts.');
 		}
 
@@ -156,7 +156,7 @@ class GoogleService {
 							};
 						}
 
-						console.log('dataStreams: ', dataStreamsRes.data.dataStreams);
+						//console.log('dataStreams: ', dataStreamsRes.data.dataStreams);
 
 						return {
 							propertyId: y.property.split('/')[1],
@@ -179,7 +179,7 @@ class GoogleService {
 			console.error("Error:", error.message);
 		}
 
-		console.log('Accounts : ', accounts[0].properties[0]);
+		//console.log('Accounts : ', accounts[0].properties[0]);
 		return { username, accounts };
 	}
 
@@ -287,8 +287,6 @@ class GoogleService {
 				//console.log('Rows', reportData.rows.length);
 				//pageToken = report.nextPageToken;
 			} while (pageToken);
-
-			console.log(rows);
 
 			return { 
 				by: by, 
