@@ -75,18 +75,9 @@ const TitleSection = () => {
           <CutifiedInstantText />access to all <br /> your metrics and KPI<CutifiedSText />
         </h1>
         <h4 className="gradient">
-          The metrics dashboard that focuses on stability and simplicity. You will love it.
+          Nekometrics is an OpenSource project that allows you to centralize all your metrics and KPIs in one place, with pretty but powerful dashboards.
         </h4>
       </>
-
-      {/* {!user &&
-        <div style={{ marginTop: 60, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <EmailInput />
-          <p style={{ width: '80%', maxWidth: 580 }}>
-            To guarantee the quality of Nekometrics, we accept users little by little, and through invitations. Let us know your email here and we will invite you soon 😌 !
-          </p>
-        </div>
-      } */}
 
       {user && 
         <Link href="/dashboard" passHref>

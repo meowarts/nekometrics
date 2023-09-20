@@ -18,7 +18,8 @@ const StyledQuote = styled.div`
 
 const StyledSignature = styled.p`
     text-align: right;
-    margin: 0;
+    margin-top: 20px;
+    margin-bottom: 0px;
 `
 
 const Quote = ({ p1 }) => {

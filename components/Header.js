@@ -32,8 +32,9 @@ const Header = (props) => {
           </Link>
           {!isDashboard &&
             <div className={css.navLinks}>
-              <Link href='/demo'>DEMO</Link>
               <Link href='/faq'>FAQ</Link>
+              <Link href='https://github.com/meowarts/nekometrics' target='_blank'>GITHUB</Link>
+              <Link href='/demo'>DEMO</Link>
               <Link href='/contact'>CONTACT</Link>
               {(user && user.accountType === 'admin') && <Link href='/admin'>ADMIN</Link>}
             </div>
