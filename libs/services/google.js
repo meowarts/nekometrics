@@ -125,34 +125,59 @@ class GoogleService {
 			throw new FriendlyError('Cannot get the list of accounts.');
 		}
 
-		const accounts = await Promise.all(res.data.accountSummaries.map(async x =>  ({
-			accountId: x.account.split('/')[1],
-			name: x.displayName,
-			properties: await Promise.all(x.propertySummaries.map(async y => {
-				let dataStreamsRes = await analyticsadmin.properties.dataStreams.list({ auth: oauth, parent: y.property });
-				console.log('dataStreams: ', dataStreamsRes.data.dataStreams);
+		let accounts = [];
+		try {
+			if (!res.data.accountSummaries || res.data.accountSummaries.length === 0) {
+				throw new Error('accountSummaries is empty or undefined');
+			}
+
+			accounts = await Promise.all(res.data.accountSummaries.map(async x => {
+				if (!x.propertySummaries || x.propertySummaries.length === 0) {
+					console.warn(`No propertySummaries for account: ${x.account}`);
+					return {
+						accountId: x.account.split('/')[1],
+						name: x.displayName,
+						properties: []
+					};
+				}
+
 				return {
-					propertyId: y.property.split('/')[1],
-					name: y.displayName,
-					dataStreams: dataStreamsRes.data.dataStreams.map( z => ({ 
-						dataStreamId : z.name.split('/')[3], 
-						name: z.displayName,
+					accountId: x.account.split('/')[1],
+					name: x.displayName,
+					properties: await Promise.all(x.propertySummaries.map(async y => {
+						let dataStreamsRes = await analyticsadmin.properties.dataStreams.list({ auth: oauth, parent: y.property });
 
-						// WebStreamData
-						measurementId: z.webStreamData?.measurementId,
-						url: z.webStreamData?.defaultUri,
+						if (!dataStreamsRes.data.dataStreams || dataStreamsRes.data.dataStreams.length === 0) {
+							console.warn(`No dataStreams for property: ${y.property}`);
+							return {
+								propertyId: y.property.split('/')[1],
+								name: y.displayName,
+								dataStreams: []
+							};
+						}
 
-						// firebaseAppStreamData
-						firebaseAppId: z.iosAppStreamData?.firebaseAppId ?? z.androidAppStreamData?.firebaseAppId,
-						// iosAppStreamData
-						bundleId: z.iosAppStreamData?.bundleId,
-						// androidAppStreamData
-						packageName: z.androidAppStreamData?.packageName,
+						console.log('dataStreams: ', dataStreamsRes.data.dataStreams);
 
-					})),
+						return {
+							propertyId: y.property.split('/')[1],
+							name: y.displayName,
+							dataStreams: dataStreamsRes.data.dataStreams.map(z => ({
+								dataStreamId: z.name.split('/')[3],
+								name: z.displayName,
+								measurementId: z.webStreamData?.measurementId,
+								url: z.webStreamData?.defaultUri,
+								firebaseAppId: z.iosAppStreamData?.firebaseAppId ?? z.androidAppStreamData?.firebaseAppId,
+								bundleId: z.iosAppStreamData?.bundleId,
+								packageName: z.androidAppStreamData?.packageName,
+							}))
+						};
+					}))
 				};
-			}))
-		})));
+			}));
+		}
+		catch (error) {
+			console.error("Error:", error.message);
+		}
 
 		console.log('Accounts : ', accounts[0].properties[0]);
 		return { username, accounts };
@@ -231,6 +256,15 @@ class GoogleService {
 					dateRanges: date_filters,
 					metrics: metrics_columns,
 					dimensions: dimensions_rows,
+					orderBys: [
+						{
+							dimension: {
+								dimensionName: dimension,
+								orderType: 'ALPHANUMERIC'
+							},
+							desc: false
+						}
+					],
 					//pageToken: pageToken
 					//pageSize: 10
 					//orderBys: sort
@@ -253,6 +287,8 @@ class GoogleService {
 				//console.log('Rows', reportData.rows.length);
 				//pageToken = report.nextPageToken;
 			} while (pageToken);
+
+			console.log(rows);
 
 			return { 
 				by: by, 
