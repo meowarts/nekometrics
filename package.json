@@ -55,5 +55,8 @@
     "eslint": "7.28.0",
     "eslint-plugin-react": "7.24.0",
     "eslint-plugin-react-hooks": "4.2.0"
+  },
+  "engines": {
+    "node": "<= 16.20.2"
   }
 }
