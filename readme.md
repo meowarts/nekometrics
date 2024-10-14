@@ -61,6 +61,35 @@ The following instructions are tailored for development mode with the `.env.loca
 
 ### X(Twitter)
 
+#### 1. Create a new app
+
+If you have already an app, skip to 2.
+
+1. Go to the Developer Portal.
+2. Create a new app from the "+Add App."
+3. Set the "App name" you would like.
+4. Copy "API Key" and "API Key Secret". Use these keys after.
+5. Go to "App Settings"
+
+#### 2. Set up the User authentication settings
+
+1. Click "Set up" in your App Settings's "User authentication settings" section. If you have already set up, click "Edit."
+2. Configure with the following settings:
+   - App permission: Read
+   - Type of App: Web App, Automated App or Bot
+   - App info
+     - Callback URI / Redirect URL: `http://localhost:4002/oauth/twitter`
+     - Website URL: any
+
+#### 3. Configure Environment Variables
+
+Set the Consumer Keys, "API Key" and "API Key Secret" obtained in step 1, to "TWITTER_CLIENT_ID" and "TWITTER_CLIENT_SECRET" respectively in the `.env.local` file.
+
+```bash
+TWITTER_CLIENT_ID={API Key}
+TWITTER_CLIENT_SECRET={API Key Secret}
+```
+
 ### Instagram
 
 ### EDD
