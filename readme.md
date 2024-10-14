@@ -7,7 +7,7 @@ Nekometrics is an OpenSource project that allows you to centralize all your metr
 - Node.js (<= 16.20.2)
 - Yarn (used for dependency management)
 - MongoDB: A MongoDB instance must be running and accessible. Set the connection string in the `DATABASE_URL` environment variable.
-- SMTP Email Service: An SMTP email service such as Mailgun is required for sending emails. Configure the email server settings in the `.env.local` file:
+- SMTP Email Service: An SMTP email service such as Mailgun is required for sending emails. Configure the email server settings in your env (e.g. `.env.local`) file:
   - `EMAIL_SERVER_HOST`
   - `EMAIL_SERVER_PORT`
   - `EMAIL_SERVER_USER`
@@ -33,13 +33,13 @@ yarn install
 
 ### 3. Set up environment variables
 
-Create a `.env.local` file in the root directory by copying `.env` and configuring the required values.
+Create a env (here, `.env.local`) file in the root directory by copying `.env` and configuring the required values.
 
 ```bash
 cp .env .env.local
 ```
 
-Edit the `.env.local` file with your local environment configurations (e.g., MongoDB connection details, API keys).
+Edit the env file with your environment configurations (e.g., MongoDB connection details, API keys).
 
 ### 4. Start the development server
 
@@ -50,6 +50,10 @@ yarn dev
 ```
 
 ## Services
+
+This section outlines the necessary steps to register and configure various services. Each service requires specific settings and credentials, which may vary based on your development or production environment.
+
+The following instructions are tailored for development mode with the `.env.local` file. Please ensure to adjust any values (e.g., localhost) as necessary.
 
 ### MAILCHIMP
 
