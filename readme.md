@@ -65,7 +65,7 @@ The following instructions are tailored for development mode with the `.env.loca
 
 If you have already an app, skip to 2.
 
-1. Go to the Developer Portal.
+1. Go to the [Developer Portal](https://developer.x.com/en/portal/dashboard).
 2. Create a new app from the "+Add App."
 3. Set the "App name" you would like.
 4. Copy "API Key" and "API Key Secret". Use these keys after.
