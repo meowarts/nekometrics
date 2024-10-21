@@ -90,8 +90,6 @@ TWITTER_CLIENT_ID={API Key}
 TWITTER_CLIENT_SECRET={API Key Secret}
 ```
 
-### Instagram
-
 ### EDD
 
 ### YouTube
@@ -125,4 +123,25 @@ GOOGLE_CLIENT_ID={Client ID}
 GOOGLE_CLIENT_SECRET={Client Secret}
 ```
 
-### Facebook
+### Facebook & Instagram
+
+#### 1. Create a new app
+
+1. Go to the [Apps page](https://developers.facebook.com/apps/).
+2. Create a new app from the "Create App" button.
+3. In a creating flow, select the below:
+   - Use cases: Other
+   - App Types: Business
+
+#### 2. Configure Environment Variables
+
+Once you create the app, you'll see the "App ID" and "App secret" on the basic page of the app settings. Set these values to "FACEBOOK_CLIENT_ID" and "FACEBOOK_CLIENT_SECRET" respectively in the `.env.local` file.
+
+```bash
+FACEBOOK_CLIENT_ID={App ID}
+FACEBOOK_CLIENT_SECRET={App secret}
+```
+
+#### Note
+
+If your pages and your Instagram account didn't show in the data source (like `Facebook (0 page, 0 instagram profile)` ), you might need Business verification. Check the Verifications section in your App settings' basic page and follow the steps on that page.
