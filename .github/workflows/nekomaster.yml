@@ -1,0 +1,17 @@
+name: Nekomaster
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  nekometrics:
+    uses: meowarts/nekomaster-actions/.github/workflows/deploy.yml@main
+    secrets:
+      do_token: ${{ secrets.DO_TOKEN }}
+      ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+    with:
+      action: build-reload
+      folder: nekometrics
+      instance: nekometrics
