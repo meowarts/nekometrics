@@ -15,6 +15,7 @@ import SoftBusyOverlay from '~/components/SoftBusyOverlay';
 import { getMetrics, resetMetrics, forceGetMetrics } from '~/libs/requests';
 import { useInterval } from '~/libs/helpers';
 import NekoButton from '../buttons/NekoButton';
+import { NO_FORCE_REFRESH_WIDGETS } from '~/libs/constants';
 
 const fakeData = (dayJsFrom, cumulative = false) => {
   let result = [];
@@ -79,6 +80,7 @@ const WidgetsFactory = (props) => {
   const widgetName = widget.name ? widget.name : 'NO TITLE';
 
   const healthySpine = Boolean(widgetSpine && widgetSpine.icon && widgetSpine.widget && widgetSpine.settings);
+  const nonRefreshable = NO_FORCE_REFRESH_WIDGETS.includes(`${widget.service}-${widget.type}`);
 
   useEffect(() => { 
     //console.log('Something changed.', widget, [widget.serviceId, widget.settings]);
@@ -177,6 +179,9 @@ const WidgetsFactory = (props) => {
 
   // TODO: This should be moved to the context, probably.
   const onForceRefresh = async () => {
+    if (nonRefreshable) {
+      return;
+    }
     setIsBusy(true);
     console.log('Call forceGetMetrics.');
     const res = await forceGetMetrics(widget._id);
@@ -207,6 +212,9 @@ const WidgetsFactory = (props) => {
   }
 
   const lastErrorText = useMemo(() => {
+    if (nonRefreshable) {
+      return null;
+    }
     let error = null;
     if (lastUpdate && lastUpdate.fromNow() > 2) {
       error = "The data hasn't been updated for more than two days!";
@@ -215,7 +223,7 @@ const WidgetsFactory = (props) => {
       error = widget.lastIssue.error;
     }
     return error ? `${error} Click on the error icon to force-trigger a refresh.` : null;
-  }, [lastUpdate]);
+  }, [lastUpdate, nonRefreshable, widget.lastIssue]);
 
   return (
     <SoftBusyOverlay className={css.widgetContainer} busy={isBusy === true}>

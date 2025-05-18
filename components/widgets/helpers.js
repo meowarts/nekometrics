@@ -39,13 +39,20 @@ const dataAggregatorOptimizer = (data) => {
 }
 
 const yAxisTickFormatter = (value) => {
-	if (value >= 1000000) {
-		return Math.round(value / 1000000) + 'M';
-	}
-	else if (value >= 1000) {
-		return Math.round(value / 1000) + 'k';
-	}
-	return Math.round(value);
+        let num = value;
+        if (typeof num === 'string') {
+                num = Number(num.replace(/[, ]/g, ''));
+        }
+        if (isNaN(num)) {
+                return value;
+        }
+        if (num >= 1000000) {
+                return Math.round(num / 1000000) + 'M';
+        }
+        else if (num >= 1000) {
+                return Math.round(num / 1000) + 'k';
+        }
+        return Math.round(num);
 };
 
 const xAxisTickFormatter = (date, by = 'day') => {
