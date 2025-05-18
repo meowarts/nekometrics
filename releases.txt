@@ -1,3 +1,7 @@
+== 0.7.5 - Mary 18, 2025 ==
+* The 1,000 issue.
+* No need refresh for Google Analytics.
+
 == 0.7.4 - September 11, 2022 ==
 * Timeout after 10 seconds with all services.
 
