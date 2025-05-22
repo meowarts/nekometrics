@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import CountUp from 'react-countup';
 
 import { PeriodsDiff } from '../common/PeriodsDiff';
-import { getLastValue, yAxisTickFormatter, xAxisTickFormatter } from '~/components/widgets/helpers';
+import { getLastValue, yAxisTickFormatter, xAxisTickFormatter, numberWithCommas } from '~/components/widgets/helpers';
 import StandardChart from '../common/StandardChart';
 
 const AnalyticsVisits = (props) => {
@@ -21,7 +21,7 @@ const AnalyticsVisits = (props) => {
 			</div>
 			<StandardChart widget={widget} data={data} 
 				xAxisTickFormatter={(value) => xAxisTickFormatter(value, by)}
-				yAxisLabelFormatter={(value) => 'Visits: ' + yAxisTickFormatter(value)}
+				yAxisLabelFormatter={(value) => 'Visits: ' + numberWithCommas(value)}
 			/>
 		</div>
 	);

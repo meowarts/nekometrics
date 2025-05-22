@@ -6,20 +6,37 @@ const getPeriodsDiff = (data) => {
 	let weekDiff = null;
 	let monthDiff = null;
 	let yearDiff = null;
-	let currentDay = data.length - 1;
-	let currentValue = null;
 	
 	try {
-		if (currentDay >= 0)
-			currentValue = data[currentDay].value;
-		if (currentDay > 0) 
-			dayDiff = Math.round(currentValue - data[currentDay - 1].value);
-		if (currentDay >= 7) 
-			weekDiff = Math.round(currentValue - data[currentDay - 7].value);
-		if (currentDay >= 30) 
-			monthDiff = Math.round(currentValue - data[currentDay - 30].value);
-		if (currentDay >= 365) 
-			yearDiff = Math.round(currentValue - data[currentDay - 365].value);
+		if (data.length >= 2) {
+			// Daily: Compare yesterday (last complete day) vs day before that
+			const yesterday = data[data.length - 2].value;
+			const dayBefore = data[data.length - 3]?.value;
+			if (dayBefore !== undefined) {
+				dayDiff = Math.round(yesterday - dayBefore);
+			}
+		}
+		
+		if (data.length >= 14) {
+			// Weekly: Compare last 7 days total vs previous 7 days total
+			const last7Days = data.slice(-7).reduce((sum, item) => sum + item.value, 0);
+			const previous7Days = data.slice(-14, -7).reduce((sum, item) => sum + item.value, 0);
+			weekDiff = Math.round(last7Days - previous7Days);
+		}
+		
+		if (data.length >= 62) {
+			// Monthly: Compare last 31 days total vs previous 31 days total
+			const last31Days = data.slice(-31).reduce((sum, item) => sum + item.value, 0);
+			const previous31Days = data.slice(-62, -31).reduce((sum, item) => sum + item.value, 0);
+			monthDiff = Math.round(last31Days - previous31Days);
+		}
+		
+		if (data.length >= 730) {
+			// Yearly: Compare last 365 days total vs previous 365 days total
+			const last365Days = data.slice(-365).reduce((sum, item) => sum + item.value, 0);
+			const previous365Days = data.slice(-730, -365).reduce((sum, item) => sum + item.value, 0);
+			yearDiff = Math.round(last365Days - previous365Days);
+		}
 	}
 	catch (err) {
 		console.log(err);

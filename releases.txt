@@ -1,3 +1,7 @@
+== 0.7.6 - May 23, 2025 ==
+* Fixed chart tooltips to show full numbers (1,204) instead of abbreviated (1k).
+* Improved period comparisons to compare complete periods (yesterday vs day before, last 7 days vs previous 7 days, etc.)
+
 == 0.7.5 - Mary 18, 2025 ==
 * The 1,000 issue.
 * No need refresh for Google Analytics.
