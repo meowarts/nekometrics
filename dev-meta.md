@@ -7,7 +7,7 @@ Meta needs to test Nekometrics in order to approve the Meta App. This message is
 I will show you how to link to Facebook from Nekometrics, and how to create a widget with the PAGE LIKES.
 
 Login is at the top right (the user icon).
-Please use "facebook@nekometrics.com" and as the password: "hellofacebook".
+[Test credentials should be provided separately through secure channels]
 
 - After login, click on "My Dashboard" or "Get Started".
 - Click on the Add button at the top right, and add Data Source.
