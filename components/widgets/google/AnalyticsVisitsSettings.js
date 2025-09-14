@@ -27,7 +27,7 @@ const AnalyticsVisitsSettings = (props) => {
   const [serviceId, setServiceId] = useState(settings.serviceId ? settings.serviceId : '');
   const [propertyId, setDataStreamId] = useState(settings.propertyId ? settings.propertyId : '');
   const [color, setColor] = useState(settings.color ? settings.color : '');
-  const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'week', length: 2 });
+  const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'year', length: 2 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'bar' });
   
   // System

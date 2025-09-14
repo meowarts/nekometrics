@@ -1,24 +1,18 @@
-import { useMemo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-import CountUp from 'react-countup';
 
-import { PeriodsDiff } from '../common/PeriodsDiff';
-import { getLastValue, yAxisTickFormatter, xAxisTickFormatter, numberWithCommas } from '~/components/widgets/helpers';
+import MetricDisplay from '../common/MetricDisplay';
+import { yAxisTickFormatter, xAxisTickFormatter, numberWithCommas } from '~/components/widgets/helpers';
 import StandardChart from '../common/StandardChart';
 
 const AnalyticsVisits = (props) => {
 	const css = useStyles();
 	const { widget, data: originalData } = props;
 	const { data, by } =  originalData;
-	const last = useMemo(() => getLastValue(data), [data]);
 
 	return (
 		<div className={css.container}>
-			<div className={css.glance}>
-				<div className={css.last}><CountUp preserveValue={true} separator=" " end={parseInt(last)} /></div>
-				<div className={css.lastLabel}><PeriodsDiff data={data} /></div>
-			</div>
+			<MetricDisplay data={data} by={by} />
 			<StandardChart widget={widget} data={data} 
 				xAxisTickFormatter={(value) => xAxisTickFormatter(value, by)}
 				yAxisLabelFormatter={(value) => 'Visits: ' + numberWithCommas(value)}
@@ -28,18 +22,6 @@ const AnalyticsVisits = (props) => {
 }
 
 const useStyles = makeStyles(theme => ({
-	glance: {
-		marginTop: 0,
-		marginBottom: 5,
-		textAlign: 'center',
-		fontFamily: theme.fonts.FAMILY.ROBOTO,
-		color: theme.common.COLOR_PRIMARY_NEKO,
-	},
-	last: {
-		fontSize: theme.fonts.SIZE[32],
-		fontWeight: theme.fonts.WEIGHT[700],
-		marginBottom: '-3px'
-	},
 	container: {
     flex: 1,
     display: 'flex',

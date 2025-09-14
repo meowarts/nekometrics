@@ -208,7 +208,7 @@ class GoogleService {
 		if (!service)
 			throw new FriendlyError('The service it was linked to does not exist anymore.');
 		
-		params.period = params.period ? params.period : { length: 2, unit: 'week' };
+		params.period = params.period ? params.period : { length: 2, unit: 'year' };
 		const oauth = this.createOauthClient(service);
 		const fromDate = DayJS().subtract(params.period.length, params.period.unit).toDate();
 		const dateTo = DayJS().add(-1, 'day').startOf('day').toDate();
@@ -219,21 +219,31 @@ class GoogleService {
 		}];
 
 		// Calculate nice dimension and date filters
-		let months = DayJS(dateTo).diff(DayJS(fromDate), "month"); 
-		let days = DayJS(dateTo).diff(DayJS(fromDate), "day"); 
+		let months = DayJS(dateTo).diff(DayJS(fromDate), "month");
+		let days = DayJS(dateTo).diff(DayJS(fromDate), "day");
 		let dimension = 'hour';
 		let by = 'hour';
-		if (months > 12) {
+
+		// Better granularity logic:
+		// - More than 3 years: show yearly data
+		// - More than 3 months: show monthly data
+		// - More than 7 days: show daily data
+		// - 7 days or less: show hourly data
+		if (months > 36) {
 			dimension = 'year';
 			by = 'year';
 		}
-		else if (months > 1) {
+		else if (months >= 3 || days > 90) {
 			dimension = 'yearMonth';
 			by = 'month';
 		}
-		else if (days > 1) {
+		else if (days > 7) {
 			dimension = 'date';
 			by = 'day';
+		}
+		else if (days > 1) {
+			dimension = 'dateHour';
+			by = 'hour';
 		}
 		let dimensions_rows = [{ name: dimension }]; 
 		let date_filters = [{ 
