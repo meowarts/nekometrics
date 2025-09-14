@@ -15,6 +15,13 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Set build-time environment variables
+# These are needed for Next.js to embed them in the client-side bundle
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_APP_ANALYTICS
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+ENV NEXT_PUBLIC_APP_ANALYTICS=${NEXT_PUBLIC_APP_ANALYTICS}
+
 # Build the application
 RUN pnpm build
 
