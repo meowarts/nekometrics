@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_OPTIONS='--openssl-legacy-provider' next dev -p 4002",
     "build": "NODE_OPTIONS='--openssl-legacy-provider' next build",
-    "start": "NODE_OPTIONS='--openssl-legacy-provider' next start -p 4001",
+    "start": "NODE_OPTIONS='--openssl-legacy-provider' next start -p ${PORT:-3000}",
     "refresh": "git pull & pnpm run build && pm2 reload nekometrics",
     "start-stg": "NODE_OPTIONS='--openssl-legacy-provider' next start -p 4003",
     "refresh-stg": "git pull & pnpm run build && pm2 reload nekometrics-stg",
