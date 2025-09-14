@@ -10,8 +10,6 @@ const calculateTrend = (data, by) => {
 	}
 
 	try {
-		let lastPeriodValue;
-		let previousPeriodsAvg;
 		let workingData = [...data];
 
 		// Exclude current incomplete period
@@ -65,28 +63,41 @@ const calculateTrend = (data, by) => {
 			}
 		}
 
-		if (workingData.length < 2) {
+		// Need at least 4 data points for a meaningful 15/85 split
+		if (workingData.length < 4) {
 			return null;
 		}
 
-		// Get the last complete period
-		lastPeriodValue = workingData[workingData.length - 1].value;
+		// Calculate 15% of data for recent period (minimum 1 point, but prefer more for daily data)
+		let recentCount = Math.ceil(workingData.length * 0.15);
 
-		// Calculate average of all previous periods (excluding the last one)
-		const previousPeriods = workingData.slice(0, -1);
-		if (previousPeriods.length === 0) {
+		// For daily/hourly data, ensure we get at least 7 days if available (to smooth weekends)
+		if ((by === 'day' || by === 'hour') && recentCount < 7 && workingData.length >= 10) {
+			recentCount = Math.min(7, Math.floor(workingData.length * 0.3));
+		}
+
+		// Ensure we have at least 1 point for recent and 1 for historical
+		recentCount = Math.max(1, Math.min(recentCount, workingData.length - 1));
+
+		// Split data into recent (last 15%) and historical (first 85%)
+		const recentPeriods = workingData.slice(-recentCount);
+		const historicalPeriods = workingData.slice(0, -recentCount);
+
+		if (historicalPeriods.length === 0) {
 			return null;
 		}
 
-		previousPeriodsAvg = previousPeriods.reduce((sum, item) => sum + item.value, 0) / previousPeriods.length;
+		// Calculate averages for both periods
+		const recentAvg = recentPeriods.reduce((sum, item) => sum + item.value, 0) / recentPeriods.length;
+		const historicalAvg = historicalPeriods.reduce((sum, item) => sum + item.value, 0) / historicalPeriods.length;
 
 		// Avoid division by zero
-		if (previousPeriodsAvg === 0) {
-			return lastPeriodValue > 0 ? { percent: 100, direction: 'up' } : { percent: 0, direction: 'flat' };
+		if (historicalAvg === 0) {
+			return recentAvg > 0 ? { percent: 100, direction: 'up' } : { percent: 0, direction: 'flat' };
 		}
 
-		// Calculate percentage change from average
-		const percentChange = ((lastPeriodValue - previousPeriodsAvg) / previousPeriodsAvg) * 100;
+		// Calculate percentage change from historical average
+		const percentChange = ((recentAvg - historicalAvg) / historicalAvg) * 100;
 
 		// Consider changes less than 0.5% as flat
 		if (Math.abs(percentChange) < 0.5) {
@@ -107,7 +118,7 @@ const TrendIndicator = (props) => {
 	const { data, by = 'day' } = props;
 	const css = useStyles();
 
-	// Calculate single trend: last period vs average of all previous visible periods
+	// Calculate trend: average of recent 15% vs average of historical 85%
 	const trend = calculateTrend(data, by);
 
 	if (!trend) {
