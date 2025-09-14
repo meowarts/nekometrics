@@ -67,8 +67,18 @@ MongoDB collections:
 
 ## Development Notes
 
-- Node.js version must be <= 16.20.2 (specified in package.json)
+- Node.js version: 20+ (Docker deployment uses Node 20)
+- Package manager: pnpm (migrated from yarn)
 - Uses Material-UI v4 for UI components
 - Styled-components for additional styling
 - React Grid Layout for dashboard drag-and-drop functionality
 - PM2 commands in package.json suggest production deployment uses PM2
+- Plausible Analytics integration for tracking
+
+## Deployment
+
+The application is configured for Coolify deployment with:
+- Dockerfile with multi-stage build
+- Next.js standalone output mode
+- Health check endpoint at `/api/health`
+- See `DEPLOY_COOLIFY.md` for detailed deployment instructions
