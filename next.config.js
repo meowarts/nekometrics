@@ -1,7 +1,6 @@
 const dashId = ':dashId([a-z0-9]{24,24})';
 
 const moduleExports = {
-  output: 'standalone', // Required for Docker deployment
   serverRuntimeConfig: {
     // Will only be available on the server side
   },
