@@ -37,6 +37,7 @@ class MyDocument extends Document {
           <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nova+Flat&display=swap"/>
           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Coda&display=swap" />
+          <script defer data-domain="nekometrics.com" src="https://plausible.nyao.cloud/js/script.js"></script>
         </Head>
         <body>
           <Main />

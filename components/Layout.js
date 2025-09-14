@@ -90,12 +90,10 @@ const useStyles = makeStyles(theme => ({
   header: { flexShrink: 0 }, //Prevent shrinking smaller than their content's default minimum size.
   pageContainer: {
     flex: '1 0 auto',
-    display: 'flex', 
+    display: 'flex',
     justifyContent: 'center',
     padding: '70px 0px 0px',
     minHeight: '100vh',
-    overflow: 'scroll',
-    overflowX: 'hidden',
     [theme.breakpoints.down(900)]: { padding: '0 10px' }
   },
   paperPage: {
@@ -161,7 +159,7 @@ const useStyles = makeStyles(theme => ({
   },
   pictureBackground: {
     background: 'url(/photo-full-of-stars.jpeg)',
-    position: 'absolute',
+    position: 'fixed',
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     left: 0,
@@ -169,11 +167,11 @@ const useStyles = makeStyles(theme => ({
     bottom: 0,
     top: 0,
     overflow: 'visible',
-    zIndex: -1    
+    zIndex: -1
   },
   solidBackground: {
     background: 'url(/main-wallpaper.svg) !important',
-    position: 'absolute',
+    position: 'fixed',
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     left: 0,
