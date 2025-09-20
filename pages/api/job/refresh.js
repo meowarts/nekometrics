@@ -38,10 +38,10 @@ const cleanOldJobs = async (db) => {
 
 const detectTimedOutJobs = async (db) => {
   const haltedAt = new Date();
-  const fifteenMinutesAgo = process.env.NODE_ENV === 'production' ? 
-    DayJS().subtract(15, 'minutes').toDate() : DayJS().subtract(15, 'seconds').toDate();
+  const tenMinutesAgo = process.env.NODE_ENV === 'production' ?
+    DayJS().subtract(10, 'minutes').toDate() : DayJS().subtract(15, 'seconds').toDate();
   const timedOutJobs = await db.collection('Job').updateMany({
-    type: 'refresh', status: 'running', startedOn: { $lt: fifteenMinutesAgo }
+    type: 'refresh', status: 'running', startedOn: { $lt: tenMinutesAgo }
   }, { $set: { status: 'timeout', haltedAt } });
   if (timedOutJobs.modifiedCount > 0) {
     console.error(`${timedOutJobs.modifiedCount} jobs timed out.`);
@@ -50,11 +50,25 @@ const detectTimedOutJobs = async (db) => {
 
 const Service = async (req, res) => {
   const { db } = req;
+  // First, detect and mark timed out jobs
+  await detectTimedOutJobs(db);
+
+  // Now check if there are any still-running jobs
   const job = await db.collection('Job').findOne({ type: 'refresh', status: 'running' }, { sort: { startedOn: -1 } });
-  detectTimedOutJobs(db);
   if (job) {
-    
-    return res.status(503).json({ success: false, message: 'A job is already running.', job });
+    // Check if this job has been running for more than 10 minutes
+    const tenMinutesAgo = DayJS().subtract(10, 'minutes').toDate();
+    if (job.startedOn < tenMinutesAgo) {
+      // This shouldn't happen as detectTimedOutJobs should have caught it, but just in case
+      console.error(`Found stuck job ${job._id} running since ${job.startedOn}, marking as timed out`);
+      await db.collection('Job').updateOne(
+        { _id: job._id },
+        { $set: { status: 'timeout', haltedAt: new Date() } }
+      );
+    } else {
+      // Job is legitimately still running (less than 10 minutes)
+      return res.status(503).json({ success: false, message: 'A job is already running.', job });
+    }
   }
 
   const startedOn = new Date();
