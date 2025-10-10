@@ -30,10 +30,12 @@ const refreshWidgets = async (db, widgets) => {
 };
 
 const cleanOldJobs = async (db) => {
-  const oneMonthAgo = process.env.NODE_ENV === 'production' ? 
-      DayJS().subtract(1, 'month').toDate() : DayJS().subtract(15, 'minutes').toDate();
-  db.collection('Job').deleteMany({ startedOn: { $lt: oneMonthAgo } });
-  // oldRunningJobs.deletedCount
+  const oneWeekAgo = process.env.NODE_ENV === 'production' ?
+      DayJS().subtract(1, 'week').toDate() : DayJS().subtract(15, 'minutes').toDate();
+  const result = await db.collection('Job').deleteMany({ startedOn: { $lt: oneWeekAgo } });
+  if (result.deletedCount > 0) {
+    console.log(`Cleaned up ${result.deletedCount} old jobs.`);
+  }
 }
 
 const detectTimedOutJobs = async (db) => {
@@ -87,14 +89,14 @@ const Service = async (req, res) => {
   }
   const finishedOn = new Date();
   const elapsedMs = finishedOn.getTime() - startedOn.getTime();
-  db.collection('Job').updateOne({ _id: ObjectID(jobId) }, { $set: { 
+  db.collection('Job').updateOne({ _id: ObjectID(jobId) }, { $set: {
     status: 'finished',
     updates: widgets.length,
     finishedOn,
     elapsedMs
   }});
 
-  cleanOldJobs(db);
+  await cleanOldJobs(db);
 
   return res.status(200).json({ success: true, updates: widgets.length });
 }
