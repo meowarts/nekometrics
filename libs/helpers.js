@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FriendlyError } from './services/errors';
-import { AbortController } from "node-abort-controller";
 
 const timeoutInMs = 10000;
 
@@ -14,10 +13,14 @@ const fetchIt = (path, fetchOpts = {}, params = null) => {
       url.searchParams.append(key, params[key]);
     }
   });
-  const controller = new AbortController();
-  // Set a maximum timeout of 10 seconds
-  setTimeout(() => controller.abort(), timeoutInMs);
-  return fetch(url, {...fetchOpts, signal: controller.signal})
+  const supportsAbort = typeof AbortController !== 'undefined';
+  const controller = supportsAbort ? new AbortController() : null;
+  // Set a maximum timeout of 10 seconds when AbortController is available
+  if (controller) {
+    setTimeout(() => controller.abort(), timeoutInMs);
+  }
+  const fetchOptsWithSignal = controller ? { ...fetchOpts, signal: controller.signal } : fetchOpts;
+  return fetch(url, fetchOptsWithSignal)
     .then((res) => res.json())
     .catch(err => { 
       if (err.name === 'AbortError') {

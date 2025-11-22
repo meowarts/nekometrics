@@ -149,18 +149,28 @@ class WooCommerceService {
 	}
 
 	fetchSales = async (api, from, to) => {
-		let res = await api.get('reports/sales', { 
-			date_min: from.format('YYYY-MM-DD'), 
-			date_max: to.format('YYYY-MM-DD'),
-		});
-		const results = [];
-		for (const [key, value] of Object.entries(res.data[0].totals)) {
-			results.push({
-				date: DayJS(key).endOf('day').toDate(),
-				value: roundValue(parseFloat(value.sales)),
+		try {
+			let res = await api.get('reports/sales', { 
+				date_min: from.format('YYYY-MM-DD'), 
+				date_max: to.format('YYYY-MM-DD'),
 			});
+			const results = [];
+			for (const [key, value] of Object.entries(res.data[0].totals)) {
+				results.push({
+					date: DayJS(key).endOf('day').toDate(),
+					value: roundValue(parseFloat(value.sales)),
+				});
+			}
+			return results;
 		}
-		return results;
+		catch (err) {
+			const status = err?.response?.status;
+			const message = status === 401
+				? 'WooCommerce credentials are invalid or lack permission to read sales. Please reconnect.'
+				: 'Could not reach WooCommerce to fetch sales. Please try again later.';
+			console.error('[WC] fetchSales failed', status || err?.code || err?.message);
+			throw new FriendlyError(message);
+		}
 	}
 
 	refreshService = async (service) => {

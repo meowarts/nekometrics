@@ -107,7 +107,11 @@ class FacebookService {
 		const service = await this.db.collection('Service').findOne({ _id: ObjectID(serviceId) });
 		if (!service)
 			throw new FriendlyError('The data source does not exist anymore.');
-		const account = service.data.accounts.find(x => x.id.toString() === accountId.toString());
+		const accounts = service?.data?.accounts;
+		if (!Array.isArray(accounts) || accounts.length === 0) {
+			throw new FriendlyError('The linked Facebook account is not set up correctly. Please reconnect.');
+		}
+		const account = accounts.find(x => x.id.toString() === accountId.toString());
 		const pageToken = account.access_token;
 		if (!pageToken)
 			throw new FriendlyError('The pageToken for the selected account could not be found.');
@@ -151,7 +155,11 @@ class FacebookService {
 		const service = await this.db.collection('Service').findOne({ _id: ObjectID(serviceId) });
 		if (!service)
 			throw new FriendlyError('The service it was linked to does not exist anymore.');	
-		const account = service.data.accounts.find(x => x.id === accountId);
+		const accounts = service?.data?.accounts;
+		if (!Array.isArray(accounts) || accounts.length === 0) {
+			throw new FriendlyError('The linked Facebook account is not set up correctly. Please reconnect.');
+		}
+		const account = accounts.find(x => x.id === accountId);
 		if (!account)
 			throw new FriendlyError('The account it was linked to does not exist anymore.');	
 		const pageToken = account.access_token;
@@ -240,7 +248,11 @@ class FacebookService {
 		const service = await this.db.collection('Service').findOne({ _id: ObjectID(serviceId) });
 		if (!service)
 			throw new FriendlyError('The service it was linked to does not exist anymore.');	
-		const account = service.data.accounts.find(x => x.id === accountId);
+		const accounts = service?.data?.accounts;
+		if (!Array.isArray(accounts) || accounts.length === 0) {
+			throw new FriendlyError('The linked Facebook account is not set up correctly. Please reconnect.');
+		}
+		const account = accounts.find(x => x.id === accountId);
 		if (!account)
 			throw new FriendlyError('The account it was linked to does not exist anymore.');	
 		const pageToken = account.access_token;
