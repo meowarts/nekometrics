@@ -25,6 +25,10 @@ const getServiceLinks = async () => {
     }, {
       name: 'facebook',
       mode: 'oauth'
+    }, {
+      name: 'wordpress',
+      title: 'WordPress',
+      mode: 'dialog'
     }
   ];
 }

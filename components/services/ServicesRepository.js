@@ -1,6 +1,7 @@
-import { Twitter, Facebook, AlternateEmail, Timeline, AttachMoney, Store, Pets } from '@material-ui/icons';
+import { Twitter, Facebook, AlternateEmail, Timeline, AttachMoney, Store, Pets, Language } from '@material-ui/icons';
 import EddAddDialog from './EddAddDialog';
 import WooCommerceAddDialog from './WooCommerceAddDialog';
+import WordPressAddDialog from './WordPressAddDialog';
 
 // https://www.materialui.co/socialcolors
 
@@ -57,6 +58,15 @@ const ServicesRepository = [
     icon: Store,
     configDialog: WooCommerceAddDialog,
     //WooCommerceAddDialog: WooCommerceAddDialog
+  }, {
+    title: 'WordPress',
+    name: 'wordpress',
+    color: '#21759b',
+    mode: 'dialog',
+    image: '/wordpress-logo.svg',
+    text: 'WordPress',
+    icon: Language,
+    configDialog: WordPressAddDialog
   }, {
     title: 'Fake (Random Data)',
     name: 'fake',

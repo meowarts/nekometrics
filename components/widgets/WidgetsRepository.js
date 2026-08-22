@@ -1,4 +1,4 @@
-import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook } from '@material-ui/icons';
+import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook, Language } from '@material-ui/icons';
 import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
 import FaceOutlinedIcon from '@material-ui/icons/FaceOutlined';
 import ThumbUpAltOutlinedIcon from '@material-ui/icons/ThumbUpAltOutlined';
@@ -12,6 +12,7 @@ import FakeHistorical from './fake/Historical';
 import TwitterFollowers from './twitter/Followers';
 import WooCommerceSales from './woocommerce/Sales';
 import EddEarnings from './edd/Earnings';
+import WordPressMetric from './wordpress/Metric';
 
 import GoogleHistoryUsersSettings from './google/AnalyticsVisitsSettings';
 import IgFollowersSettings from './facebook/IgFollowersSettings';
@@ -22,6 +23,7 @@ import WooCommerceSalesSettings from './woocommerce/SalesSettings';
 import FacebookPageLikesSettings from './facebook/PageLikesSettings';
 import FacebookPageLikes from './facebook/PageLikes';
 
+import WordPressMetricSettings from './wordpress/MetricSettings';
 import FakeHistoricalSettings from './fake/HistoricalSettings';
 
 import { SERVICES, TYPES } from '~/libs/constants';
@@ -96,6 +98,16 @@ const WidgetsRepository = [
     widget: WooCommerceSales,
     settings: WooCommerceSalesSettings,
     color: '#7f54b3'
+  }, {
+    title: 'WordPress',
+    description: 'Any metric from your site',
+    service: SERVICES.WORDPRESS,
+    type: TYPES.WORDPRESS.METRIC,
+    icon: Language,
+    subIcon: VisibilityOutlinedIcon,
+    widget: WordPressMetric,
+    settings: WordPressMetricSettings,
+    color: '#21759b'
   }, {
     title: 'Audience',
     description: 'Growth',

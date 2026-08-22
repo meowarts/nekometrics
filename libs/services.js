@@ -6,6 +6,7 @@ import MailchimpService from '~/libs/services/mailchimp';
 import EddService from '~/libs/services/edd';
 import TwitterService from '~/libs/services/twitter';
 import WooCommerceService from '~/libs/services/woocommerce';
+import WordPressService from '~/libs/services/wordpress';
 
 import { FriendlyError, ServiceDisconnectedError, ServiceNotAuthorizedError } from './services/errors';
 import { TYPES, SERVICES } from '~/libs/constants';
@@ -20,6 +21,7 @@ class Services {
   mailchimpService = null;
   eddService = null;
   twitterService = null;
+  wordPressService = null;
 
   repoCreate = {};
   metricRepo = {};
@@ -78,6 +80,13 @@ class Services {
     this.metricRepo[`${SERVICES.WOOCOMMERCE}-${TYPES.WOOCOMMERCE.SALES}`] = this.wooCommerceService.getSales;
     this.resetRepo[`${SERVICES.WOOCOMMERCE}-${TYPES.WOOCOMMERCE.SALES}`] = this.wooCommerceService.resetSales;
     this.refreshRepo[`${SERVICES.WOOCOMMERCE}-${TYPES.WOOCOMMERCE.SALES}`] = this.wooCommerceService.refreshSales;
+
+    // WordPress (through the Nekometrics plugin)
+    this.wordPressService = new WordPressService(this.db);
+    this.repoCreate[SERVICES.WORDPRESS] = this.wordPressService.createNew;
+    this.metricRepo[`${SERVICES.WORDPRESS}-${TYPES.WORDPRESS.METRIC}`] = this.wordPressService.getMetric;
+    this.resetRepo[`${SERVICES.WORDPRESS}-${TYPES.WORDPRESS.METRIC}`] = this.wordPressService.resetMetric;
+    this.refreshRepo[`${SERVICES.WORDPRESS}-${TYPES.WORDPRESS.METRIC}`] = this.wordPressService.refreshMetric;
 
   }
 
