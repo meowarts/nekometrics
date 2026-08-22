@@ -118,6 +118,11 @@ const makeYAxisTickFormatter = (values) => {
 			return Math.round(num / 1000000) + 'M';
 		}
 		if (max >= 1000) {
+			// Tighter still than a decimal can show: a series spanning fifty units
+			// around 2,930 reads "2.9k" at every tick, so drop the suffix entirely.
+			if (span < 200) {
+				return String(Math.round(num));
+			}
 			return span < 2000 ? (num / 1000).toFixed(1) + 'k' : Math.round(num / 1000) + 'k';
 		}
 		return Math.round(num);

@@ -55,7 +55,7 @@ const StandardChart = (props) => {
         </defs>
           
         <XAxis dataKey="date" tickFormatter={xAxisTickFormatter} />
-        <YAxis dataKey="value" tickFormatter={makeYAxisTickFormatter(workData.map(x => x.value))} width={26}
+        <YAxis dataKey="value" tickFormatter={makeYAxisTickFormatter(workData.map(x => x.value))} width={32}
           allowDataOverflow={false} domain={[chartSettings.type === 'bar' ? 0 : 'auto', 'auto']} />
         <Tooltip 
           content={<NekoToolTip yAxisLabel={yAxisLabelFormatter} />}
