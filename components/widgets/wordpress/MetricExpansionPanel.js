@@ -55,7 +55,9 @@ const MetricAccordion = (props) => {
 
         {(current ? current.params : []).map((definition) => (
           <FormControl fullWidth className={own.field} key={definition.id}>
-            <Select value={params[definition.id] || ''}
+            {/* displayEmpty: an option can legitimately be the empty string
+                ("All lists"), and without it MUI renders a blank box. */}
+            <Select displayEmpty value={params[definition.id] || ''}
               onChange={(ev) => onSetParam(definition.id, ev.target.value)}>
               {definition.options.map((option) =>
                 <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
