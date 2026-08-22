@@ -122,7 +122,10 @@ class Services {
 
   resetMetrics  = async (widget) => {
     try {
-      const data = this.runServiceFunc(widget, this.resetRepo);
+      // Without the await, the catch below never sees a failed reset: the widget
+      // was marked healthy and its lastIssue cleared while the reset was still
+      // running, and again even when it ended up rejecting.
+      const data = await this.runServiceFunc(widget, this.resetRepo);
       this.db.collection('Widget').updateOne({ '_id': ObjectID(widget._id) }, { $set: { 
         'enabled': true, 
         'refreshedOn': new Date(),

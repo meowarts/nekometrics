@@ -3,6 +3,7 @@ const DayJS = require('dayjs');
 const Url = require('url');
 const WC_API = require('@woocommerce/woocommerce-rest-api').default;
 
+import { fetchIt } from '~/libs/helpers';
 import { FriendlyError } from './errors';
 
 let singleton = null;
@@ -35,9 +36,10 @@ class WooCommerceService {
 		const now = new Date();
 		const endpoint = params.endpoint.replace(/\/+$/, "");
 		const domain = Url.parse(endpoint).hostname;
+		const storeName = await this.fetchStoreName({ data: { endpoint } }, domain);
 		let service = { 
 			userId: ObjectID(user._id),
-			name: `WooCommerce (${domain})`,
+			name: `WooCommerce (${storeName})`,
 			service: 'woocommerce',
 			data: {
 				username: domain,
@@ -173,12 +175,29 @@ class WooCommerceService {
 		}
 	}
 
+	/**
+	 * The name of the site running the store. Asked of WordPress rather than of
+	 * WooCommerce, because WooCommerce has no store name of its own: it only
+	 * knows the store address, and naming a source after its city says nothing
+	 * about which shop it is (two shops in one town got the same name, and the
+	 * domain, the one thing that identified them, was thrown away).
+	 */
+	fetchStoreName = async (service, fallback) => {
+		try {
+			const index = await fetchIt(service.data.endpoint.replace(/\/+$/, ''),
+				{ method: 'GET' }, { _fields: 'name' });
+			return index?.name ? index.name : fallback;
+		}
+		catch (err) {
+			// A name is a nicety. The domain always works.
+			return fallback;
+		}
+	}
+
 	refreshService = async (service) => {
 		const now = new Date();
-		const api = this.initApi(service);
-		const res = await api.get('settings/general/woocommerce_store_city');
-		const storeCity = res.data?.value ? res.data.value : 'Store city unknown';
-		service.name = `WooCommerce (${storeCity})`;
+		const domain = Url.parse(service.data.endpoint).hostname;
+		service.name = `WooCommerce (${await this.fetchStoreName(service, domain)})`;
 		service.updatedOn = now;
 		this.db.collection('Service').updateOne({ _id: ObjectID(service._id) }, { 
 			$set: { name: service.name, updatedOn: now } 
