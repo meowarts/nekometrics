@@ -1,4 +1,4 @@
-import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook, Language, Extension, PieChart } from '@material-ui/icons';
+import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook, Language, Extension, PieChart, ShowChart } from '@material-ui/icons';
 import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
 import FaceOutlinedIcon from '@material-ui/icons/FaceOutlined';
 import ThumbUpAltOutlinedIcon from '@material-ui/icons/ThumbUpAltOutlined';
@@ -15,6 +15,7 @@ import EddEarnings from './edd/Earnings';
 import WordPressMetric from './wordpress/Metric';
 import WordPressOrgPlugin from './wordpressorg/Plugin';
 import WordPressOrgPortfolio from './wordpressorg/Portfolio';
+import PlausibleTraffic from './plausible/Traffic';
 
 import GoogleHistoryUsersSettings from './google/AnalyticsVisitsSettings';
 import IgFollowersSettings from './facebook/IgFollowersSettings';
@@ -28,6 +29,7 @@ import FacebookPageLikes from './facebook/PageLikes';
 import WordPressMetricSettings from './wordpress/MetricSettings';
 import WordPressOrgPluginSettings from './wordpressorg/PluginSettings';
 import WordPressOrgPortfolioSettings from './wordpressorg/PortfolioSettings';
+import PlausibleTrafficSettings from './plausible/TrafficSettings';
 import FakeHistoricalSettings from './fake/HistoricalSettings';
 
 import { SERVICES, TYPES } from '~/libs/constants';
@@ -132,6 +134,16 @@ const WidgetsRepository = [
     widget: WordPressOrgPortfolio,
     settings: WordPressOrgPortfolioSettings,
     color: '#3858e9'
+  }, {
+    title: 'Traffic',
+    description: 'Visitors & pageviews',
+    service: SERVICES.PLAUSIBLE,
+    type: TYPES.PLAUSIBLE.TRAFFIC,
+    icon: ShowChart,
+    subIcon: VisibilityOutlinedIcon,
+    widget: PlausibleTraffic,
+    settings: PlausibleTrafficSettings,
+    color: '#5850ec'
   }, {
     title: 'Audience',
     description: 'Growth',

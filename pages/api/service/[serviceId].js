@@ -69,6 +69,11 @@ const Service = async (req, res) => {
       const newService = await svc.wordPressOrgService.refreshService(service);
       return res.status(200).json({ success: true, service: newService });
     }
+    else if (req.method === 'GET' && service.service === 'plausible') {
+      const svc = new Services(db);
+      const newService = await svc.plausibleService.refreshService(service);
+      return res.status(200).json({ success: true, service: newService });
+    }
     else if (req.method === 'DELETE') {
       await db.collection('Service').deleteOne({ '_id': ObjectID(serviceId) });
       return res.status(200).json({ success: true });

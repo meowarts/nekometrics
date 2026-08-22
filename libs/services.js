@@ -8,6 +8,7 @@ import TwitterService from '~/libs/services/twitter';
 import WooCommerceService from '~/libs/services/woocommerce';
 import WordPressService from '~/libs/services/wordpress';
 import WordPressOrgService from '~/libs/services/wordpressorg';
+import PlausibleService from '~/libs/services/plausible';
 
 import { FriendlyError, ServiceDisconnectedError, ServiceNotAuthorizedError } from './services/errors';
 import { TYPES, SERVICES } from '~/libs/constants';
@@ -24,6 +25,7 @@ class Services {
   twitterService = null;
   wordPressService = null;
   wordPressOrgService = null;
+  plausibleService = null;
 
   repoCreate = {};
   metricRepo = {};
@@ -99,6 +101,13 @@ class Services {
     this.metricRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PORTFOLIO}`] = this.wordPressOrgService.getPortfolio;
     this.resetRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PORTFOLIO}`] = this.wordPressOrgService.resetPortfolio;
     this.refreshRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PORTFOLIO}`] = this.wordPressOrgService.refreshPortfolio;
+
+    // Plausible
+    this.plausibleService = new PlausibleService(this.db);
+    this.repoCreate[SERVICES.PLAUSIBLE] = this.plausibleService.createNew;
+    this.metricRepo[`${SERVICES.PLAUSIBLE}-${TYPES.PLAUSIBLE.TRAFFIC}`] = this.plausibleService.getTraffic;
+    this.resetRepo[`${SERVICES.PLAUSIBLE}-${TYPES.PLAUSIBLE.TRAFFIC}`] = this.plausibleService.resetTraffic;
+    this.refreshRepo[`${SERVICES.PLAUSIBLE}-${TYPES.PLAUSIBLE.TRAFFIC}`] = this.plausibleService.refreshTraffic;
 
   }
 

@@ -1,8 +1,9 @@
-import { Twitter, Facebook, AlternateEmail, Timeline, AttachMoney, Store, Pets, Language, Extension } from '@material-ui/icons';
+import { Twitter, Facebook, AlternateEmail, Timeline, AttachMoney, Store, Pets, Language, Extension, ShowChart } from '@material-ui/icons';
 import EddAddDialog from './EddAddDialog';
 import WooCommerceAddDialog from './WooCommerceAddDialog';
 import WordPressAddDialog from './WordPressAddDialog';
 import WordPressOrgAddDialog from './WordPressOrgAddDialog';
+import PlausibleAddDialog from './PlausibleAddDialog';
 
 // https://www.materialui.co/socialcolors
 
@@ -77,6 +78,15 @@ const ServicesRepository = [
     text: 'WordPress.org',
     icon: Extension,
     configDialog: WordPressOrgAddDialog
+  }, {
+    title: 'Plausible',
+    name: 'plausible',
+    color: '#5850ec',
+    mode: 'dialog',
+    image: '/plausible-logo.svg',
+    text: 'Plausible',
+    icon: ShowChart,
+    configDialog: PlausibleAddDialog
   }, {
     title: 'Fake (Random Data)',
     name: 'fake',
