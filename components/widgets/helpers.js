@@ -114,6 +114,10 @@ const makeYAxisTickFormatter = (values) => {
 		if (isNaN(num)) {
 			return value;
 		}
+		// Zero is zero in every unit, and "0k" on a baseline looks like a mistake.
+		if (num === 0) {
+			return '0';
+		}
 		if (max >= 1000000 && span >= 100000) {
 			return Math.round(num / 1000000) + 'M';
 		}
