@@ -40,7 +40,12 @@ const aggregateSeries = (data, by = 'day', kind = 'flow') => {
 	}
 	const buckets = new Map();
 	for (const row of data) {
-		const key = DayJS(row.date).endOf(by).toISOString();
+		// Every point is stored as the end of its day in the server's timezone, so
+		// read from a browser further east it lands on the morning of the day
+		// after and falls into the next bucket: the current week came out as a
+		// single day holding zero. Stepping back half a day puts the reading in
+		// the middle of the day it belongs to, whatever the reader's offset.
+		const key = DayJS(row.date).subtract(12, 'hour').endOf(by).toISOString();
 		if (!buckets.has(key)) {
 			buckets.set(key, { ...row, date: key, value: kind === 'flow' ? 0 : undefined });
 		}
