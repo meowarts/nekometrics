@@ -72,9 +72,15 @@ class WordPressService {
 		}
 		let data = null;
 		try {
+			// The `_t` is not decoration. The plugin asks every cache in front of the
+			// site not to store its answers, and Kinsta ignores that outright: a
+			// query-less URL comes back as a HIT with s-maxage=86400, so a site could
+			// keep answering with what it said a day ago. Caches key on the full URL
+			// and Kinsta bypasses anything with a query string, so a unique parameter
+			// is the one defence that does not depend on how the site is hosted.
 			data = await fetchIt(buildUrl(endpoint, route), {
 				headers: { 'X-Nekometrics-Key': key }
-			}, params);
+			}, { ...(params || {}), _t: Date.now() });
 		}
 		catch (err) {
 			// A wrong address usually answers with an HTML page, which blows up on
