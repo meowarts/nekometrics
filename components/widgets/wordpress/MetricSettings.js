@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { makeStyles, DialogContent, DialogActions } from "@material-ui/core";
-import { TextField, Select, MenuItem, FormControl, FormHelperText } from '@material-ui/core/';
+import { TextField } from '@material-ui/core/';
 import CloseIcon from '@material-ui/icons/Close';
 import PropTypes from 'prop-types';
 
 import ServiceAccordion from '../common/panels/ServiceExpansionPanel';
+import MetricAccordion from './MetricExpansionPanel';
 import PeriodAccordion from '../common/panels/PeriodExpansionPanel';
 import ColorAccordion from '../common/panels/ColorExpansionPanel';
 import AdminAccordion from '../common/panels/AdminExpansionPanel';
@@ -101,37 +102,12 @@ function MetricSettings(props) {
         <ServiceAccordion expanded={expanded === 'servicePanel'}
           serviceName='wordpress' services={services}
           onExpandPanel={(ev, open) => expandPanel(open ? 'servicePanel' : false)}
-          serviceId={serviceId} onSetServiceId={setServiceId}>
-          <FormControl>
-            <Select value={provider} onChange={(ev) => onSetProvider(ev.target.value)}>
-              {sources.map((x) => <MenuItem key={x.id} value={x.id}>{x.name}</MenuItem>)}
-            </Select>
-            <FormHelperText>Select the source on your site.</FormHelperText>
-          </FormControl>
+          serviceId={serviceId} onSetServiceId={setServiceId} />
 
-          {!!metrics.length && <FormControl>
-            <Select value={metric} onChange={(ev) => onSetMetric(ev.target.value)}>
-              {metrics.map((x) => <MenuItem key={x.id} value={x.id}>{x.name}</MenuItem>)}
-            </Select>
-            <FormHelperText>Select the metric.</FormHelperText>
-          </FormControl>}
-
-          {(currentMetric?.params || []).map((definition) => (
-            <FormControl key={definition.id}>
-              <Select value={params[definition.id] || ''}
-                onChange={(ev) => onSetParam(definition.id, ev.target.value)}>
-                {definition.options.map((option) =>
-                  <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-                )}
-              </Select>
-              <FormHelperText>{definition.name}</FormHelperText>
-            </FormControl>
-          ))}
-
-          {!!currentMetric?.note && <FormHelperText style={{ marginTop: 10 }}>
-            {currentMetric.note}
-          </FormHelperText>}
-        </ServiceAccordion>
+        <MetricAccordion expanded={expanded === 'metricPanel'}
+          onExpandPanel={(ev, open) => expandPanel(open ? 'metricPanel' : false)}
+          sources={sources} provider={provider} metric={metric} params={params}
+          onSetProvider={onSetProvider} onSetMetric={onSetMetric} onSetParam={onSetParam} />
 
         <ColorAccordion expanded={expanded === 'colorPanel'}
           title={currentMetric ? currentMetric.name : 'Value'}
