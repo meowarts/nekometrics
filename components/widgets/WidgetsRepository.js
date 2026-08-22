@@ -1,4 +1,4 @@
-import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook, Language, Extension, PieChart, ShowChart } from '@material-ui/icons';
+import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook, Language, Extension, PieChart, ShowChart, FlightTakeoff } from '@material-ui/icons';
 import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
 import FaceOutlinedIcon from '@material-ui/icons/FaceOutlined';
 import ThumbUpAltOutlinedIcon from '@material-ui/icons/ThumbUpAltOutlined';
@@ -16,6 +16,7 @@ import WordPressMetric from './wordpress/Metric';
 import WordPressOrgPlugin from './wordpressorg/Plugin';
 import WordPressOrgPortfolio from './wordpressorg/Portfolio';
 import PlausibleTraffic from './plausible/Traffic';
+import TravelPayoutsStats from './travelpayouts/Stats';
 
 import GoogleHistoryUsersSettings from './google/AnalyticsVisitsSettings';
 import IgFollowersSettings from './facebook/IgFollowersSettings';
@@ -30,6 +31,7 @@ import WordPressMetricSettings from './wordpress/MetricSettings';
 import WordPressOrgPluginSettings from './wordpressorg/PluginSettings';
 import WordPressOrgPortfolioSettings from './wordpressorg/PortfolioSettings';
 import PlausibleTrafficSettings from './plausible/TrafficSettings';
+import TravelPayoutsStatsSettings from './travelpayouts/StatsSettings';
 import FakeHistoricalSettings from './fake/HistoricalSettings';
 
 import { SERVICES, TYPES } from '~/libs/constants';
@@ -144,6 +146,16 @@ const WidgetsRepository = [
     widget: PlausibleTraffic,
     settings: PlausibleTrafficSettings,
     color: '#5850ec'
+  }, {
+    title: 'Affiliate',
+    description: 'Clicks, bookings, earnings',
+    service: SERVICES.TRAVELPAYOUTS,
+    type: TYPES.TRAVELPAYOUTS.STATS,
+    icon: FlightTakeoff,
+    subIcon: EuroOutlinedIcon,
+    widget: TravelPayoutsStats,
+    settings: TravelPayoutsStatsSettings,
+    color: '#1c7ed6'
   }, {
     title: 'Audience',
     description: 'Growth',

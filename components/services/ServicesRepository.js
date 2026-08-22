@@ -1,9 +1,10 @@
-import { Twitter, Facebook, AlternateEmail, Timeline, AttachMoney, Store, Pets, Language, Extension, ShowChart } from '@material-ui/icons';
+import { Twitter, Facebook, AlternateEmail, Timeline, AttachMoney, Store, Pets, Language, Extension, ShowChart, FlightTakeoff } from '@material-ui/icons';
 import EddAddDialog from './EddAddDialog';
 import WooCommerceAddDialog from './WooCommerceAddDialog';
 import WordPressAddDialog from './WordPressAddDialog';
 import WordPressOrgAddDialog from './WordPressOrgAddDialog';
 import PlausibleAddDialog from './PlausibleAddDialog';
+import TravelPayoutsAddDialog from './TravelPayoutsAddDialog';
 
 // https://www.materialui.co/socialcolors
 
@@ -87,6 +88,15 @@ const ServicesRepository = [
     text: 'Plausible',
     icon: ShowChart,
     configDialog: PlausibleAddDialog
+  }, {
+    title: 'Travelpayouts',
+    name: 'travelpayouts',
+    color: '#1c7ed6',
+    mode: 'dialog',
+    image: '/travelpayouts-logo.svg',
+    text: 'Travelpayouts',
+    icon: FlightTakeoff,
+    configDialog: TravelPayoutsAddDialog
   }, {
     title: 'Fake (Random Data)',
     name: 'fake',

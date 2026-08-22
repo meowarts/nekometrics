@@ -9,6 +9,7 @@ import WooCommerceService from '~/libs/services/woocommerce';
 import WordPressService from '~/libs/services/wordpress';
 import WordPressOrgService from '~/libs/services/wordpressorg';
 import PlausibleService from '~/libs/services/plausible';
+import TravelPayoutsService from '~/libs/services/travelpayouts';
 
 import { FriendlyError, ServiceDisconnectedError, ServiceNotAuthorizedError } from './services/errors';
 import { TYPES, SERVICES } from '~/libs/constants';
@@ -26,6 +27,7 @@ class Services {
   wordPressService = null;
   wordPressOrgService = null;
   plausibleService = null;
+  travelPayoutsService = null;
 
   repoCreate = {};
   metricRepo = {};
@@ -108,6 +110,13 @@ class Services {
     this.metricRepo[`${SERVICES.PLAUSIBLE}-${TYPES.PLAUSIBLE.TRAFFIC}`] = this.plausibleService.getTraffic;
     this.resetRepo[`${SERVICES.PLAUSIBLE}-${TYPES.PLAUSIBLE.TRAFFIC}`] = this.plausibleService.resetTraffic;
     this.refreshRepo[`${SERVICES.PLAUSIBLE}-${TYPES.PLAUSIBLE.TRAFFIC}`] = this.plausibleService.refreshTraffic;
+
+    // Travelpayouts
+    this.travelPayoutsService = new TravelPayoutsService(this.db);
+    this.repoCreate[SERVICES.TRAVELPAYOUTS] = this.travelPayoutsService.createNew;
+    this.metricRepo[`${SERVICES.TRAVELPAYOUTS}-${TYPES.TRAVELPAYOUTS.STATS}`] = this.travelPayoutsService.getStats;
+    this.resetRepo[`${SERVICES.TRAVELPAYOUTS}-${TYPES.TRAVELPAYOUTS.STATS}`] = this.travelPayoutsService.resetStats;
+    this.refreshRepo[`${SERVICES.TRAVELPAYOUTS}-${TYPES.TRAVELPAYOUTS.STATS}`] = this.travelPayoutsService.refreshStats;
 
   }
 

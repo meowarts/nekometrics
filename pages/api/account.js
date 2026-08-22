@@ -37,6 +37,10 @@ const getServiceLinks = async () => {
       name: 'plausible',
       title: 'Plausible',
       mode: 'dialog'
+    }, {
+      name: 'travelpayouts',
+      title: 'Travelpayouts',
+      mode: 'dialog'
     }
   ];
 }
