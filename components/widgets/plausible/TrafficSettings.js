@@ -26,6 +26,7 @@ function TrafficSettings(props) {
   const [site, setSite] = useState(settings.site ? settings.site : '');
   const [metric, setMetric] = useState(settings.metric ? settings.metric : 'visitors');
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'month', length: 3 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'area' });
 
@@ -39,7 +40,7 @@ function TrafficSettings(props) {
   const sites = useMemo(() => service?.data?.sites || [], [service]);
 
   const onSave = async () => {
-    await props.onUpdateWidget(name, { serviceId, site, metric, color, period, chart });
+    await props.onUpdateWidget(name, { serviceId, site, metric, color, icon, period, chart });
     props.onClose();
   }
 
@@ -91,7 +92,7 @@ function TrafficSettings(props) {
         <ColorAccordion expanded={expanded === 'colorPanel'}
           title={metric === 'pageviews' ? 'Pageviews' : 'Visitors'}
           onExpandPanel={(ev, open) => expandPanel(open ? 'colorPanel' : false)}
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'}
           onExpandPanel={(ev, open) => expandPanel(open ? 'periodPanel' : false)}

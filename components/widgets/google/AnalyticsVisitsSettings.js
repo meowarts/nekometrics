@@ -27,6 +27,7 @@ const AnalyticsVisitsSettings = (props) => {
   const [serviceId, setServiceId] = useState(settings.serviceId ? settings.serviceId : '');
   const [propertyId, setDataStreamId] = useState(settings.propertyId ? settings.propertyId : '');
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'year', length: 2 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'bar' });
   
@@ -53,7 +54,7 @@ const AnalyticsVisitsSettings = (props) => {
 
   // Save all Settings
   const onSave = () => {
-    const newSettings = { serviceId, propertyId, color, period, chart };
+    const newSettings = { serviceId, propertyId, color, icon, period, chart };
     props.onUpdateWidget(name, newSettings);
     props.onClose();
   }
@@ -94,7 +95,7 @@ const AnalyticsVisitsSettings = (props) => {
         <ColorAccordion expanded={expanded === 'colorPanel'} 
           title='Users'
           onExpandPanel={(ev, open) => expandPanel(open ? 'colorPanel' : false)} 
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'} 
           onExpandPanel={(ev, open) => expandPanel(open ? 'periodPanel' : false)} 

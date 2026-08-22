@@ -22,6 +22,7 @@ function FakeHistoricalSettings(props) {
   // Settings
   const [name, setName] = useState(widget.name ? widget.name : '');
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [dataType, setDataType] = useState(settings.dataType ? settings.dataType : 'growth');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'week', length: 2 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'area' });
@@ -33,7 +34,7 @@ function FakeHistoricalSettings(props) {
 
   // Save all Settings
   const onSave = () => {
-    const newSettings = { color, period, dataType, chart };
+    const newSettings = { color, icon, period, dataType, chart };
     props.onUpdateWidget(name, newSettings);
     props.onClose();
   }
@@ -50,7 +51,7 @@ function FakeHistoricalSettings(props) {
         <ColorAccordion expanded={expanded === 'colorPanel'} 
           title='Followers'
           onExpandPanel={(ev, open) => expandPanel(open ? 'colorPanel' : false)} 
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'} 
           onExpandPanel={(ev, open) => expandPanel(open ? 'periodPanel' : false)} 

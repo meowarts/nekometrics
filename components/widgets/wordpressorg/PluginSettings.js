@@ -26,6 +26,7 @@ function PluginSettings(props) {
   const [serviceId, setServiceId] = useState(settings.serviceId ? settings.serviceId : '');
   const [slug, setSlug] = useState(settings.slug ? settings.slug : '');
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'month', length: 3 });
 
   // System
@@ -43,7 +44,7 @@ function PluginSettings(props) {
   const current = useMemo(() => plugins.find(x => x.slug === slug), [plugins, slug]);
 
   const onSave = async () => {
-    await props.onUpdateWidget(name, { serviceId, slug, color, period });
+    await props.onUpdateWidget(name, { serviceId, slug, color, icon, period });
     props.onClose();
   }
 
@@ -84,7 +85,7 @@ function PluginSettings(props) {
         <ColorAccordion expanded={expanded === 'colorPanel'}
           title='Downloads'
           onExpandPanel={(ev, open) => expandPanel(open ? 'colorPanel' : false)}
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'}
           onExpandPanel={(ev, open) => expandPanel(open ? 'periodPanel' : false)}

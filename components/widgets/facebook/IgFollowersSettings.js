@@ -28,6 +28,7 @@ function IgFollowersSettings(props) {
   const [accountId, setAccountId] = useState(settings.accountId ? settings.accountId : '');
   const [igBusinessId, setIgBusinessId] = useState(settings.igBusinessId ? settings.igBusinessId : '');
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'week', length: 2 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'area' });
   
@@ -58,7 +59,7 @@ function IgFollowersSettings(props) {
 
   // Save all Settings
   const onSave = () => {
-    const newSettings = { serviceId, accountId, igBusinessId, color, period, chart };
+    const newSettings = { serviceId, accountId, igBusinessId, color, icon, period, chart };
     props.onUpdateWidget(name, newSettings);
     props.onClose();
   }
@@ -95,7 +96,7 @@ function IgFollowersSettings(props) {
         <ColorAccordion expanded={expanded === 'colorPanel'} 
           title='Followers'
           onExpandPanel={(ev, open) => expandPanel(open ? 'colorPanel' : false)} 
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'} 
           onExpandPanel={(ev, open) => expandPanel(open ? 'periodPanel' : false)} 

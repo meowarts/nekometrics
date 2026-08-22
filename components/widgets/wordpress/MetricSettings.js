@@ -30,6 +30,7 @@ function MetricSettings(props) {
   const [metric, setMetric] = useState(settings.metric ? settings.metric : '');
   const [params, setParams] = useState(settings.params ? settings.params : {});
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'week', length: 2 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'area' });
 
@@ -71,7 +72,7 @@ function MetricSettings(props) {
 
   // Save all Settings
   const onSave = async () => {
-    const newSettings = { serviceId, provider, metric, params, color, period, chart };
+    const newSettings = { serviceId, provider, metric, params, color, icon, period, chart };
     await props.onUpdateWidget(name, newSettings);
     props.onClose();
   }
@@ -112,7 +113,7 @@ function MetricSettings(props) {
         <ColorAccordion expanded={expanded === 'colorPanel'}
           title={currentMetric ? currentMetric.name : 'Value'}
           onExpandPanel={(ev, open) => expandPanel(open ? 'colorPanel' : false)}
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'}
           onExpandPanel={(ev, open) => expandPanel(open ? 'periodPanel' : false)}

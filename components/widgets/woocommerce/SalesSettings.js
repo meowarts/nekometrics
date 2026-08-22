@@ -25,6 +25,7 @@ function SalesSettings(props) {
   const [name, setName] = useState(widget.name ? widget.name : '');
   const [serviceId, setServiceId] = useState(settings.serviceId ? settings.serviceId : '');
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'week', length: 2 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'area' });
 
@@ -36,7 +37,7 @@ function SalesSettings(props) {
 
   // Save all Settings
   const onSave = async () => {
-    const newSettings = { serviceId, color, period, chart };
+    const newSettings = { serviceId, color, icon, period, chart };
     await onUpdateWidget(name, newSettings);
     props.onClose();
   }
@@ -71,7 +72,7 @@ function SalesSettings(props) {
         <ColorAccordion expanded={expanded === 'colorPanel'} 
           title='Sales'
           onExpandPanel={(_ev, open) => expandPanel(open ? 'colorPanel' : false)} 
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'} 
           onExpandPanel={(_ev, open) => expandPanel(open ? 'periodPanel' : false)} 

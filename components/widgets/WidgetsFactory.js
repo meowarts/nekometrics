@@ -10,6 +10,7 @@ import ErrorIcon from '@material-ui/icons/Error';
 
 import { getWidgetSpine } from './WidgetsRepository';
 import { aggregateSeries } from './helpers';
+import { getIconByName } from './common/icons';
 import useGlobalState from '~/libs/context';
 import WidgetBurgerIcon from './WidgetBurgerIcon';
 import SoftBusyOverlay from '~/components/SoftBusyOverlay';
@@ -77,7 +78,10 @@ const WidgetsFactory = (props) => {
 
   const widgetSpine = useMemo(() => getWidgetSpine(widget), [widget]);
   const DynamicWidget = (widgetSpine && widgetSpine.icon) ? widgetSpine.widget : null;
-  const DynamicWidgetIcon = DynamicWidget ? widgetSpine.icon : null;
+  // A picked icon wins over the one the service comes with, so cards that all
+  // pull from the same source can still be told apart at a glance.
+  const DynamicWidgetIcon = DynamicWidget
+    ? (getIconByName(widget?.settings?.icon) || widgetSpine.icon) : null;
   const widgetName = widget.name ? widget.name : 'NO TITLE';
 
   const healthySpine = Boolean(widgetSpine && widgetSpine.icon && widgetSpine.widget && widgetSpine.settings);

@@ -83,6 +83,47 @@ const dataAggregatorOptimizer = (data) => {
 	return { data: newData, by: aggregateBy };
 }
 
+/**
+ * What a series is decides how it should be drawn.
+ *
+ * A flow is a quantity per bucket, and bars say that: each one is a separate
+ * week that stands on its own, and the axis starts at zero so their heights
+ * mean something. A level exists at every instant and its axis almost never
+ * starts at zero, which is exactly when a filled area lies: it makes a two
+ * percent wobble look like the whole quantity. A line makes no such claim.
+ */
+const defaultChartType = (kind) => (kind === 'stock' ? 'line' : 'bar');
+
+/**
+ * The stock formatter rounds to whole thousands, so a chart living between
+ * 46,053 and 46,780 labelled every tick "46k", five times over. When the whole
+ * series sits inside a narrow band, the ticks need a decimal to differ at all.
+ */
+const makeYAxisTickFormatter = (values) => {
+	const nums = values.filter(v => typeof v === 'number' && !isNaN(v));
+	if (nums.length < 2) {
+		return yAxisTickFormatter;
+	}
+	const max = Math.max(...nums);
+	const span = max - Math.min(...nums);
+	return (value) => {
+		let num = value;
+		if (typeof num === 'string') {
+			num = Number(num.replace(/[, ]/g, ''));
+		}
+		if (isNaN(num)) {
+			return value;
+		}
+		if (max >= 1000000 && span >= 100000) {
+			return Math.round(num / 1000000) + 'M';
+		}
+		if (max >= 1000) {
+			return span < 2000 ? (num / 1000).toFixed(1) + 'k' : Math.round(num / 1000) + 'k';
+		}
+		return Math.round(num);
+	};
+};
+
 const yAxisTickFormatter = (value) => {
         let num = value;
         if (typeof num === 'string') {
@@ -157,5 +198,5 @@ NekoToolTip.propTypes = {
 	yAxisLabel: PropTypes.any
 };
 
-export { aggregateSeries, dataAggregatorOptimizer, numberWithCommas, getLastValue,
+export { aggregateSeries, defaultChartType, makeYAxisTickFormatter, dataAggregatorOptimizer, numberWithCommas, getLastValue,
 	yAxisTickFormatter, xAxisTickFormatter, calculateChartSizes, NekoToolTip };

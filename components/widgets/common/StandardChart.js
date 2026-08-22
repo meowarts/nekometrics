@@ -1,7 +1,8 @@
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import PropTypes from 'prop-types';
 
-import { calculateChartSizes, NekoToolTip, xAxisTickFormatter, yAxisTickFormatter } from '../helpers';
+import { calculateChartSizes, NekoToolTip, xAxisTickFormatter, makeYAxisTickFormatter, defaultChartType } from '../helpers';
+import { getWidgetSpine } from '../WidgetsRepository';
 import { makeStyles, useTheme } from '@material-ui/core';
 
 const DynamicCharts = [
@@ -28,7 +29,10 @@ const StandardChart = (props) => {
   let colorSet = theme.gradientRepo.find(i => i.color === color);
   let fillType = colorSet ? `url(#${colorSet.name}` : 'url(#pink)';
 
-  let chartSettings = widget.settings?.chart ? widget.settings.chart : { type: 'area' };
+  // Without an explicit choice the shape of the series decides, see defaultChartType.
+  const spine = getWidgetSpine(widget);
+  let chartSettings = widget.settings?.chart ? widget.settings.chart
+    : { type: defaultChartType(spine?.kind) };
   let workData = data.slice();
   workData.pop();
   let { chartWidth, chartHeight } = calculateChartSizes(widget);
@@ -51,7 +55,7 @@ const StandardChart = (props) => {
         </defs>
           
         <XAxis dataKey="date" tickFormatter={xAxisTickFormatter} />
-        <YAxis dataKey="value" tickFormatter={yAxisTickFormatter} width={22} 
+        <YAxis dataKey="value" tickFormatter={makeYAxisTickFormatter(workData.map(x => x.value))} width={26}
           allowDataOverflow={false} domain={[chartSettings.type === 'bar' ? 0 : 'auto', 'auto']} />
         <Tooltip 
           content={<NekoToolTip yAxisLabel={yAxisLabelFormatter} />}

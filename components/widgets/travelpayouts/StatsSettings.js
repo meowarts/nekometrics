@@ -32,6 +32,7 @@ function StatsSettings(props) {
   const [serviceId, setServiceId] = useState(settings.serviceId ? settings.serviceId : '');
   const [metric, setMetric] = useState(settings.metric ? settings.metric : 'clicks');
   const [color, setColor] = useState(settings.color ? settings.color : '');
+  const [icon, setIcon] = useState(settings.icon ? settings.icon : '');
   const [period, setPeriod] = useState(settings.period ? settings.period : { unit: 'month', length: 3 });
   const [chart, setChart] = useState(settings.chart ? settings.chart : { type: 'bar' });
 
@@ -41,7 +42,7 @@ function StatsSettings(props) {
   const expandPanel = (panel) => { setExpanded(panel) };
 
   const onSave = async () => {
-    await props.onUpdateWidget(name, { serviceId, metric, color, period, chart });
+    await props.onUpdateWidget(name, { serviceId, metric, color, icon, period, chart });
     props.onClose();
   }
 
@@ -74,7 +75,7 @@ function StatsSettings(props) {
         <ColorAccordion expanded={expanded === 'colorPanel'}
           title={(CHOICES.find(x => x.id === metric) || CHOICES[0]).name}
           onExpandPanel={(ev, open) => expandPanel(open ? 'colorPanel' : false)}
-          color={color} onSetColor={setColor} />
+          color={color} onSetColor={setColor} icon={icon} onSetIcon={setIcon} />
 
         <PeriodAccordion expanded={expanded === 'periodPanel'}
           onExpandPanel={(ev, open) => expandPanel(open ? 'periodPanel' : false)}
