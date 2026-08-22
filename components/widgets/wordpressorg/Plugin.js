@@ -30,6 +30,16 @@ const Plugin = (props) => {
 	const installs = useMemo(() => lastDefined(data, 'installs'), [data]);
 	const downloads = useMemo(() => lastDefined(data, 'value'), [data]);
 
+	// The second axis only earns its place once the number has actually moved.
+	// WordPress.org publishes active installs rounded into buckets and keeps no
+	// history, so a fresh widget holds a single reading: drawing an axis for it
+	// gives five identical labels and a line with nothing to join. The number is
+	// already the big one above; the axis appears when there is a step to see.
+	const installsCurve = useMemo(() => {
+		const values = data.filter(x => x.installs !== undefined).map(x => x.installs);
+		return new Set(values).size > 1;
+	}, [data]);
+
 	const color = widget.settings.color ? widget.settings.color : '#FF6384';
 	const colorSet = theme.gradientRepo.find(i => i.color === color);
 	const fillType = colorSet ? `url(#${colorSet.name}` : 'url(#pink)';
@@ -64,14 +74,14 @@ const Plugin = (props) => {
 				<XAxis dataKey="date" tickFormatter={xAxisTickFormatter} />
 				<YAxis yAxisId="downloads" dataKey="value" tickFormatter={yAxisTickFormatter}
 					width={22} domain={[0, 'auto']} />
-				<YAxis yAxisId="installs" dataKey="installs" orientation="right"
-					tickFormatter={yAxisTickFormatter} width={26} domain={['auto', 'auto']} />
+				{installsCurve && <YAxis yAxisId="installs" dataKey="installs" orientation="right"
+					tickFormatter={yAxisTickFormatter} width={26} domain={['auto', 'auto']} />}
 				<Tooltip content={<PluginToolTip />} />
 				<CartesianGrid />
 
 				<Bar yAxisId="downloads" dataKey="value" fill={fillType} />
-				<Line yAxisId="installs" type="stepAfter" dataKey="installs" dot={false}
-					stroke={theme.common.COLOR_PRIMARY_NEKO} strokeWidth={2} connectNulls={true} />
+				{installsCurve && <Line yAxisId="installs" type="stepAfter" dataKey="installs" dot={false}
+					stroke={theme.common.COLOR_PRIMARY_NEKO} strokeWidth={2} connectNulls={true} />}
 			</ComposedChart>}
 		</div>
 	);
