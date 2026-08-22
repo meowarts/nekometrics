@@ -96,6 +96,9 @@ class Services {
     this.metricRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PLUGIN}`] = this.wordPressOrgService.getPlugin;
     this.resetRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PLUGIN}`] = this.wordPressOrgService.resetPlugin;
     this.refreshRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PLUGIN}`] = this.wordPressOrgService.refreshPlugin;
+    this.metricRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PORTFOLIO}`] = this.wordPressOrgService.getPortfolio;
+    this.resetRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PORTFOLIO}`] = this.wordPressOrgService.resetPortfolio;
+    this.refreshRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PORTFOLIO}`] = this.wordPressOrgService.refreshPortfolio;
 
   }
 

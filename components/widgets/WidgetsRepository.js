@@ -1,4 +1,4 @@
-import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook, Language, Extension } from '@material-ui/icons';
+import { Instagram, AlternateEmail, Timeline, AttachMoney, Store, Twitter, Pets, Facebook, Language, Extension, PieChart } from '@material-ui/icons';
 import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
 import FaceOutlinedIcon from '@material-ui/icons/FaceOutlined';
 import ThumbUpAltOutlinedIcon from '@material-ui/icons/ThumbUpAltOutlined';
@@ -14,6 +14,7 @@ import WooCommerceSales from './woocommerce/Sales';
 import EddEarnings from './edd/Earnings';
 import WordPressMetric from './wordpress/Metric';
 import WordPressOrgPlugin from './wordpressorg/Plugin';
+import WordPressOrgPortfolio from './wordpressorg/Portfolio';
 
 import GoogleHistoryUsersSettings from './google/AnalyticsVisitsSettings';
 import IgFollowersSettings from './facebook/IgFollowersSettings';
@@ -26,6 +27,7 @@ import FacebookPageLikes from './facebook/PageLikes';
 
 import WordPressMetricSettings from './wordpress/MetricSettings';
 import WordPressOrgPluginSettings from './wordpressorg/PluginSettings';
+import WordPressOrgPortfolioSettings from './wordpressorg/PortfolioSettings';
 import FakeHistoricalSettings from './fake/HistoricalSettings';
 
 import { SERVICES, TYPES } from '~/libs/constants';
@@ -119,6 +121,16 @@ const WidgetsRepository = [
     subIcon: VisibilityOutlinedIcon,
     widget: WordPressOrgPlugin,
     settings: WordPressOrgPluginSettings,
+    color: '#3858e9'
+  }, {
+    title: 'All Plugins',
+    description: 'Share of installs',
+    service: SERVICES.WORDPRESSORG,
+    type: TYPES.WORDPRESSORG.PORTFOLIO,
+    icon: PieChart,
+    subIcon: VisibilityOutlinedIcon,
+    widget: WordPressOrgPortfolio,
+    settings: WordPressOrgPortfolioSettings,
     color: '#3858e9'
   }, {
     title: 'Audience',

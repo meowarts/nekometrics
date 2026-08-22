@@ -242,6 +242,30 @@ class WordPressOrgService {
 		return Array.from(byDate.values());
 	}
 
+	/**
+	 * Not a time series: one slice per plugin, as things stand right now. The
+	 * numbers live on the service record, refreshed with it, so nothing is kept
+	 * in the Metric collection for this one.
+	 */
+	getPortfolio = async (settings) => {
+		const service = await this.getService(settings.serviceId);
+		const field = settings.by === 'downloads' ? 'downloaded' : 'installs';
+		return (service.data.plugins || [])
+			.map(x => ({ name: x.name, slug: x.slug, value: parseInt(x[field], 10) || 0 }))
+			.filter(x => x.value > 0)
+			.sort((a, b) => b.value - a.value);
+	}
+
+	refreshPortfolio = async (settings) => {
+		const service = await this.getService(settings.serviceId);
+		await this.refreshService(service);
+	}
+
+	resetPortfolio = async (settings) => {
+		await this.refreshPortfolio(settings);
+		return this.getPortfolio(settings);
+	}
+
 	refreshService = async (service) => {
 		const now = new Date();
 		const plugins = await this.fetchPlugins(service.data.author);
