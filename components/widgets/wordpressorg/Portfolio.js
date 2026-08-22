@@ -10,6 +10,17 @@ import { calculateChartSizes } from '../helpers';
 // gathered into one slice rather than dropped, so the total still adds up.
 const MAX_SLICES = 8;
 
+// Picked by name rather than taken in order from the palette, because navy is
+// #00091F and disappears into this background: a slice you cannot see reads as
+// a gap in the ring. Grey is held back for the tail.
+const SLICE_COLORS = [ 'purple', 'blue', 'teal', 'green', 'yellow', 'orange', 'red', 'pink' ];
+const OTHERS_COLOR = 'grey';
+
+const colorNamed = (theme, name) => {
+	const found = theme.gradientRepo.find(x => x.name === name);
+	return found ? found.color : '#AB7BFF';
+};
+
 const Portfolio = (props) => {
 	const css = useStyles();
 	const theme = useTheme();
@@ -30,7 +41,7 @@ const Portfolio = (props) => {
 		} ];
 	}, [data]);
 
-	const colors = useMemo(() => theme.gradientRepo.map(x => x.color), [theme]);
+	const colors = useMemo(() => SLICE_COLORS.map(name => colorNamed(theme, name)), [theme]);
 	const { chartWidth, chartHeight } = calculateChartSizes(widget);
 	const radius = Math.max(0, Math.min(chartWidth, chartHeight) / 2);
 
@@ -51,7 +62,7 @@ const Portfolio = (props) => {
 					stroke="none" isAnimationActive={true}>
 					{slices.map((slice, index) => (
 						<Cell key={slice.slug}
-							fill={slice.slug === 'others' ? theme.gradientRepo[9].color : colors[index % (colors.length - 1)]} />
+							fill={slice.slug === 'others' ? colorNamed(theme, OTHERS_COLOR) : colors[index % colors.length]} />
 					))}
 				</Pie>
 				<Tooltip content={<SliceToolTip total={total} />} />
