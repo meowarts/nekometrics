@@ -1,8 +1,9 @@
 # Build stage
 FROM node:20-alpine AS builder
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm. Pinned on purpose: pnpm@latest now resolves to 11.x, which needs
+# Node 22.13 (it requires node:sqlite) and crashes on this image.
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 WORKDIR /app
 
@@ -29,7 +30,7 @@ RUN pnpm build
 FROM node:20-alpine AS runner
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 WORKDIR /app
 
