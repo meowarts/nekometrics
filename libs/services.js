@@ -7,6 +7,7 @@ import EddService from '~/libs/services/edd';
 import TwitterService from '~/libs/services/twitter';
 import WooCommerceService from '~/libs/services/woocommerce';
 import WordPressService from '~/libs/services/wordpress';
+import WordPressOrgService from '~/libs/services/wordpressorg';
 
 import { FriendlyError, ServiceDisconnectedError, ServiceNotAuthorizedError } from './services/errors';
 import { TYPES, SERVICES } from '~/libs/constants';
@@ -22,6 +23,7 @@ class Services {
   eddService = null;
   twitterService = null;
   wordPressService = null;
+  wordPressOrgService = null;
 
   repoCreate = {};
   metricRepo = {};
@@ -87,6 +89,13 @@ class Services {
     this.metricRepo[`${SERVICES.WORDPRESS}-${TYPES.WORDPRESS.METRIC}`] = this.wordPressService.getMetric;
     this.resetRepo[`${SERVICES.WORDPRESS}-${TYPES.WORDPRESS.METRIC}`] = this.wordPressService.resetMetric;
     this.refreshRepo[`${SERVICES.WORDPRESS}-${TYPES.WORDPRESS.METRIC}`] = this.wordPressService.refreshMetric;
+
+    // WordPress.org
+    this.wordPressOrgService = new WordPressOrgService(this.db);
+    this.repoCreate[SERVICES.WORDPRESSORG] = this.wordPressOrgService.createNew;
+    this.metricRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PLUGIN}`] = this.wordPressOrgService.getPlugin;
+    this.resetRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PLUGIN}`] = this.wordPressOrgService.resetPlugin;
+    this.refreshRepo[`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PLUGIN}`] = this.wordPressOrgService.refreshPlugin;
 
   }
 

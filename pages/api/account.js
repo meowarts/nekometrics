@@ -29,6 +29,10 @@ const getServiceLinks = async () => {
       name: 'wordpress',
       title: 'WordPress',
       mode: 'dialog'
+    }, {
+      name: 'wordpressorg',
+      title: 'WordPress.org',
+      mode: 'dialog'
     }
   ];
 }
