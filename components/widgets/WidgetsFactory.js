@@ -9,6 +9,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import ErrorIcon from '@material-ui/icons/Error';
 
 import { getWidgetSpine } from './WidgetsRepository';
+import { aggregateSeries } from './helpers';
 import useGlobalState from '~/libs/context';
 import WidgetBurgerIcon from './WidgetBurgerIcon';
 import SoftBusyOverlay from '~/components/SoftBusyOverlay';
@@ -167,7 +168,11 @@ const WidgetsFactory = (props) => {
       return (<div className={css.widgetNoDataInfo}>This widget is spineless. Please ask the support to look for it.</div>);
     }
     if (data) {
-      return (<DynamicWidget widget={widget} data={data} onRefreshMetrics={onRefreshMetrics} />);
+      // Grouping happens here rather than in each widget, so every one of them
+      // gets it, and so the headline number and the chart always agree.
+      const grouped = aggregateSeries(data, widget?.settings?.period?.groupBy,
+        widgetSpine.kind ? widgetSpine.kind : 'flow');
+      return (<DynamicWidget widget={widget} data={grouped} onRefreshMetrics={onRefreshMetrics} />);
     }
     if (error) {
       return (<>
@@ -175,7 +180,7 @@ const WidgetsFactory = (props) => {
       <NekoButton primary small onClick={() => setSettingsModal(true)}>Settings</NekoButton>
     </>);
     }
-  }, [widget, data, error]);
+  }, [widget, data, error, widgetSpine]);
 
   // TODO: This should be moved to the context, probably.
   const onForceRefresh = async () => {

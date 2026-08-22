@@ -19,6 +19,43 @@ const getLastValue = (data, formatted = false) => {
 	return null;
 }
 
+/**
+ * Roll a daily series up into weeks or months.
+ *
+ * Whether a bucket is a sum or the last reading is not cosmetic, it is the
+ * difference between a real number and nonsense: downloads, visitors, clicks
+ * and earnings accumulate, so a week of them is their total. Subscribers,
+ * users and active installs are a level, not a flow, and a week of them is
+ * where the level ended, never the seven daily readings added together.
+ *
+ * A second series carried on the same rows (active installs next to downloads)
+ * is always a level, so it takes the last value whatever the main series does.
+ */
+const aggregateSeries = (data, by = 'day', kind = 'flow') => {
+	if (!Array.isArray(data) || by === 'day' || kind === 'none' || data.length < 2) {
+		return data;
+	}
+	if (!data[0] || !data[0].date) {
+		return data;
+	}
+	const buckets = new Map();
+	for (const row of data) {
+		const key = DayJS(row.date).endOf(by).toISOString();
+		if (!buckets.has(key)) {
+			buckets.set(key, { ...row, date: key, value: kind === 'flow' ? 0 : undefined });
+		}
+		const bucket = buckets.get(key);
+		if (row.value !== undefined && row.value !== null) {
+			bucket.value = kind === 'flow' ? (bucket.value || 0) + row.value : row.value;
+		}
+		if (row.installs !== undefined && row.installs !== null) {
+			bucket.installs = row.installs;
+		}
+	}
+	return Array.from(buckets.values())
+		.map(x => ({ ...x, value: typeof x.value === 'number' ? Math.round(x.value * 100) / 100 : x.value }));
+};
+
 const dataAggregatorOptimizer = (data) => {
 	let aggregateBy = 'year'; 
 	if (data.length < (30 * 3))
@@ -115,5 +152,5 @@ NekoToolTip.propTypes = {
 	yAxisLabel: PropTypes.any
 };
 
-export { dataAggregatorOptimizer, numberWithCommas, getLastValue,
+export { aggregateSeries, dataAggregatorOptimizer, numberWithCommas, getLastValue,
 	yAxisTickFormatter, xAxisTickFormatter, calculateChartSizes, NekoToolTip };
