@@ -78,9 +78,12 @@ class WordPressService {
 			// keep answering with what it said a day ago. Caches key on the full URL
 			// and Kinsta bypasses anything with a query string, so a unique parameter
 			// is the one defence that does not depend on how the site is hosted.
+			// Rebuilding a long history on a big MailPoet list is a real query, not
+			// a lookup: the default ten seconds was not enough and the widget
+			// disabled itself over it.
 			data = await fetchIt(buildUrl(endpoint, route), {
 				headers: { 'X-Nekometrics-Key': key }
-			}, { ...(params || {}), _t: Date.now() });
+			}, { ...(params || {}), _t: Date.now() }, 45000);
 		}
 		catch (err) {
 			// A wrong address usually answers with an HTML page, which blows up on

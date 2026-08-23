@@ -9,7 +9,14 @@ import { getLastValue } from '~/components/widgets/helpers';
 const MetricDisplay = (props) => {
 	const { data, prefix = '', by = 'day', kind = 'flow' } = props;
 	const css = useStyles();
-	const last = useMemo(() => getLastValue(data), [data]);
+	// The chart leaves out the period in progress, so the number must too, or the
+	// two disagree: a Sunday morning showed "0" above a chart whose last bar was
+	// 800, both correct, describing different weeks. A level has no incomplete
+	// period, so it keeps everything.
+	const shown = useMemo(
+		() => (kind !== 'stock' && data && data.length > 1) ? data.slice(0, -1) : data,
+		[data, kind]);
+	const last = useMemo(() => getLastValue(shown), [shown]);
 
 	// Counting up from zero on arrival means the board shows nothing true for
 	// the first seconds of every visit, across every card at once. The first

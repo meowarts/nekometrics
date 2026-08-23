@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FriendlyError } from './services/errors';
 
-const timeoutInMs = 10000;
+const DEFAULT_TIMEOUT = 10000;
 
-const fetchIt = (path, fetchOpts = {}, params = null) => {
+const fetchIt = (path, fetchOpts = {}, params = null, timeoutInMs = DEFAULT_TIMEOUT) => {
   var url = new URL(`${path}`);
   if (params != null) Object.keys(params).forEach((key) => { 
     if (typeof params[key] === 'object') {
