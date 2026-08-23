@@ -6,12 +6,12 @@ import StandardChart from '../common/StandardChart';
 
 const Earnings = (props) => {
 	const css = useStyles();
-	const { widget, data } = props;
+	const { widget, data, kind } = props;
 
 	return (
 		<div className={css.container}>
-			<MetricDisplay data={data} prefix="$" />
-			<StandardChart widget={widget} data={data} yAxisLabelFormatter='Income: $%d' />
+			<MetricDisplay data={data} kind={kind} prefix="$" />
+			<StandardChart widget={widget} kind={kind} data={data} yAxisLabelFormatter='Income: $%d' />
 		</div>
 	);
 }
@@ -28,7 +28,8 @@ const useStyles = makeStyles(theme => ({
 
 Earnings.propTypes = {
 	widget: PropTypes.object,
-	data: PropTypes.array
+	data: PropTypes.array,
+	kind: PropTypes.string
 };
 
 export default Earnings;

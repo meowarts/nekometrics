@@ -6,13 +6,13 @@ import StandardChart from '../common/StandardChart';
 
 const Metric = (props) => {
 	const css = useStyles();
-	const { widget, data } = props;
+	const { widget, data, kind } = props;
 	const label = widget && widget.name ? widget.name : 'Value';
 
 	return (
 		<div className={css.container}>
-			<MetricDisplay data={data} />
-			<StandardChart widget={widget} data={data} yAxisLabelFormatter={`${label}: %d`} />
+			<MetricDisplay data={data} kind={kind} />
+			<StandardChart widget={widget} kind={kind} data={data} yAxisLabelFormatter={`${label}: %d`} />
 		</div>
 	);
 }
@@ -29,7 +29,8 @@ const useStyles = makeStyles(theme => ({
 
 Metric.propTypes = {
 	widget: PropTypes.object,
-	data: PropTypes.array
+	data: PropTypes.array,
+	kind: PropTypes.string
 };
 
 export default Metric;

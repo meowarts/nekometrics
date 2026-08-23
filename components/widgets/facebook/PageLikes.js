@@ -9,7 +9,7 @@ import { LatestValue } from '../common/LatestValue';
 
 const PageLikes = (props) => {
 	const css = useStyles();
-	const { widget, data } = props;
+	const { widget, data, kind } = props;
 	const last = useMemo(() => getLastValue(data), [data]);
 
 	return (
@@ -18,7 +18,7 @@ const PageLikes = (props) => {
 				<LatestValue value={parseInt(last)} />
 				<TrendIndicator data={data} />
 			</div>
-			<StandardChart widget={widget} data={data} yAxisLabelFormatter='Followers: %d' />
+			<StandardChart widget={widget} kind={kind} data={data} yAxisLabelFormatter='Followers: %d' />
 		</div>
 	);
 }
@@ -40,7 +40,8 @@ const useStyles = makeStyles(() => ({
 
 PageLikes.propTypes = {
 	widget: PropTypes.object,
-	data: PropTypes.array
+	data: PropTypes.array,
+	kind: PropTypes.string
 };
 
 export default PageLikes;

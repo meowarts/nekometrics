@@ -92,6 +92,20 @@ const dataAggregatorOptimizer = (data) => {
  * starts at zero, which is exactly when a filled area lies: it makes a two
  * percent wobble look like the whole quantity. A line makes no such claim.
  */
+/**
+ * What a card actually measures, next to the name its owner typed. Titles are
+ * free text, so three cards ended up called "Japon Secret" and there was no way
+ * to tell the newsletter from the traffic without opening each one.
+ */
+const widgetSubtitle = (widget, spine) => {
+	const s = (widget && widget.settings) ? widget.settings : {};
+	const bits = [ s.provider, s.site, s.slug, s.metric ].filter(Boolean);
+	if (bits.length) {
+		return bits.join(' \u00b7 ');
+	}
+	return spine && spine.title ? spine.title : '';
+};
+
 const defaultChartType = (kind) => (kind === 'stock' ? 'line' : 'bar');
 
 /**
@@ -207,5 +221,5 @@ NekoToolTip.propTypes = {
 	yAxisLabel: PropTypes.any
 };
 
-export { aggregateSeries, defaultChartType, makeYAxisTickFormatter, dataAggregatorOptimizer, numberWithCommas, getLastValue,
+export { aggregateSeries, widgetSubtitle, defaultChartType, makeYAxisTickFormatter, dataAggregatorOptimizer, numberWithCommas, getLastValue,
 	yAxisTickFormatter, xAxisTickFormatter, calculateChartSizes, NekoToolTip };

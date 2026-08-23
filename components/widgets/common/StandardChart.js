@@ -2,7 +2,6 @@ import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
 import PropTypes from 'prop-types';
 
 import { calculateChartSizes, NekoToolTip, xAxisTickFormatter, makeYAxisTickFormatter, defaultChartType } from '../helpers';
-import { getWidgetSpine } from '../WidgetsRepository';
 import { makeStyles, useTheme } from '@material-ui/core';
 
 const DynamicCharts = [
@@ -21,7 +20,7 @@ const StandardChart = (props) => {
   const css = useStyles();
   const theme = useTheme();
 
-  const { widget, data, yAxisLabelFormatter = 'Value: %d' } = props;
+  const { widget, data, kind = 'flow', yAxisLabelFormatter = 'Value: %d' } = props;
 
   if (!(widget.h >= 2 && widget.w >= 2))
     return null;
@@ -30,11 +29,16 @@ const StandardChart = (props) => {
   let fillType = colorSet ? `url(#${colorSet.name}` : 'url(#pink)';
 
   // Without an explicit choice the shape of the series decides, see defaultChartType.
-  const spine = getWidgetSpine(widget);
   let chartSettings = widget.settings?.chart ? widget.settings.chart
-    : { type: defaultChartType(spine?.kind) };
+    : { type: defaultChartType(kind) };
+  // The period in progress is dropped from a flow, where a part-week bar next
+  // to whole ones reads as a collapse. A level has no such problem: today's
+  // reading is as complete as any other, and cutting it made the chart end a
+  // day before the number above it for no reason.
   let workData = data.slice();
-  workData.pop();
+  if (kind !== 'stock' && workData.length > 1) {
+    workData.pop();
+  }
   let { chartWidth, chartHeight } = calculateChartSizes(widget);
   let showDots = false;
 
@@ -61,14 +65,14 @@ const StandardChart = (props) => {
           content={<NekoToolTip yAxisLabel={yAxisLabelFormatter} />}
         />
         <CartesianGrid />
-        <DynamicChartElement type="monotone" dataKey="value"
+        <DynamicChartElement isAnimationActive={false} type="monotone" dataKey="value"
           dot={showDots ? { stroke: color, fill: 'white', fillOpacity: 1, strokeWidth: 2, r: 4.2 } : null} 
           stroke={color} fill={fillType} strokeWidth={strokeWidth} yAxisId={0}/>
       </DynamicChart>
     );
   }
   return (<div className={css.chartNoInfo} style={{ height: chartHeight }}>
-    Not enough data for chart<br />Come back in 24 hours :)
+    No chart yet<br />It fills in as readings are recorded
   </div>);
 };
 
@@ -102,6 +106,7 @@ const useStyles = makeStyles(theme => ({
 StandardChart.propTypes = {
 	widget: PropTypes.object,
   data: PropTypes.array,
+  kind: PropTypes.string,
   yAxisLabelFormatter: PropTypes.any
 };
 

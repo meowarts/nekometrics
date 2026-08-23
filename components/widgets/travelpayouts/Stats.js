@@ -13,13 +13,13 @@ const LABELS = {
 
 const Stats = (props) => {
 	const css = useStyles();
-	const { widget, data } = props;
+	const { widget, data, kind } = props;
 	const label = LABELS[widget?.settings?.metric] || LABELS.clicks;
 
 	return (
 		<div className={css.container}>
-			<MetricDisplay data={data} prefix={label.prefix} />
-			<StandardChart widget={widget} data={data}
+			<MetricDisplay data={data} kind={kind} prefix={label.prefix} />
+			<StandardChart widget={widget} kind={kind} data={data}
 				yAxisLabelFormatter={`${label.name}: ${label.prefix}%d`} />
 		</div>
 	);
@@ -37,7 +37,8 @@ const useStyles = makeStyles(theme => ({
 
 Stats.propTypes = {
 	widget: PropTypes.object,
-	data: PropTypes.array
+	data: PropTypes.array,
+	kind: PropTypes.string
 };
 
 export default Stats;

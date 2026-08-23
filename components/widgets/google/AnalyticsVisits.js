@@ -7,13 +7,13 @@ import StandardChart from '../common/StandardChart';
 
 const AnalyticsVisits = (props) => {
 	const css = useStyles();
-	const { widget, data: originalData } = props;
+	const { widget, data: originalData, kind } = props;
 	const { data, by } =  originalData;
 
 	return (
 		<div className={css.container}>
-			<MetricDisplay data={data} by={by} />
-			<StandardChart widget={widget} data={data} 
+			<MetricDisplay data={data} kind={kind} by={by} />
+			<StandardChart widget={widget} kind={kind} data={data} 
 				xAxisTickFormatter={(value) => xAxisTickFormatter(value, by)}
 				yAxisLabelFormatter={(value) => 'Visits: ' + numberWithCommas(value)}
 			/>

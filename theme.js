@@ -18,7 +18,7 @@ const NekoColors = {
   TEAL: '#4DC8A9',
   DARK_BACKGROUND_TRANSPARENT: '#1C2438',
   GRADIENT_DARK: 'linear-gradient(112.55deg, #48456de3 -42.13%, #0c132cd1 103.53%)',
-  GRADIENT_DARKER: 'linear-gradient(112.55deg, #2c2730d9 -42.13%, #0c0829d1 103.53%)',
+  GRADIENT_DARKER: 'linear-gradient(112.55deg, #2c2730f7 -42.13%, #0c0829f5 103.53%)',
   PINK_BORDER: '#683365',
   PINK_TEXT: '#b844b1',
   WIDGET_BOX_SHADOW: 'none',

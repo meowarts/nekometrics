@@ -4,122 +4,79 @@ import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import TrendingDownIcon from '@material-ui/icons/TrendingDown';
 import TrendingFlatIcon from '@material-ui/icons/TrendingFlat';
 
-const calculateTrend = (data, by) => {
+/**
+ * A trend anyone can say out loud, which the old one was not: it averaged the
+ * last 15% of the points against the first 85% and reported the difference.
+ * On a level that answers nothing, and it was quietly understating real moves,
+ * showing -0.6% on a follower count that had actually fallen from 57.0k to
+ * 56.0k, a drop three times that size.
+ *
+ * A level has a value now and a value when the window opened, so the trend is
+ * simply the distance between the two. A flow has no single value, so its two
+ * halves are compared: what the recent half averaged against the earlier half.
+ */
+const HALF_MINIMUM = 2;
+
+const meanOf = (rows) => rows.reduce((sum, x) => sum + x.value, 0) / rows.length;
+
+const asTrend = (change) => {
+	if (!isFinite(change)) {
+		return null;
+	}
+	if (Math.abs(change) < 0.5) {
+		return { percent: 0, direction: 'flat' };
+	}
+	return { percent: Math.abs(change).toFixed(1), direction: change >= 0 ? 'up' : 'down' };
+};
+
+const calculateTrend = (data, by, kind = 'flow') => {
 	if (!data || data.length < 2) {
 		return null;
 	}
-
-	try {
-		let workingData = [...data];
-
-		// Exclude current incomplete period
-		const today = new Date();
-		const lastDataPoint = workingData[workingData.length - 1];
-
-		if (by === 'month' && lastDataPoint) {
-			// Check if last data point is current month (format: YYYYMM)
-			const currentYearMonth = today.getFullYear() * 100 + (today.getMonth() + 1);
-			const lastYearMonth = parseInt(lastDataPoint.date);
-			if (lastYearMonth === currentYearMonth) {
-				workingData = workingData.slice(0, -1);
-			}
-		} else if (by === 'year' && lastDataPoint) {
-			// Check if last data point is current year
-			const currentYear = today.getFullYear();
-			const lastYear = parseInt(lastDataPoint.date);
-			if (lastYear === currentYear) {
-				workingData = workingData.slice(0, -1);
-			}
-		} else if ((by === 'day' || by === 'hour') && lastDataPoint) {
-			// For daily/hourly data, check if last point is today
-			// Handle both date formats: Date object and string
-			let lastDate;
-			if (lastDataPoint.date instanceof Date) {
-				lastDate = new Date(lastDataPoint.date);
-			} else if (typeof lastDataPoint.date === 'string') {
-				// Handle YYYYMMDD or YYYY-MM-DD formats
-				const dateStr = lastDataPoint.date.replace(/-/g, '');
-				if (dateStr.length === 8) {
-					const year = parseInt(dateStr.substring(0, 4));
-					const month = parseInt(dateStr.substring(4, 6));
-					const day = parseInt(dateStr.substring(6, 8));
-					lastDate = new Date(year, month - 1, day);
-				} else {
-					// Try parsing as ISO string
-					lastDate = new Date(lastDataPoint.date);
-				}
-			}
-
-			if (lastDate && !isNaN(lastDate.getTime())) {
-				const today = new Date();
-				// Compare dates at day level only
-				const todayStr = today.toISOString().split('T')[0];
-				const lastDateStr = lastDate.toISOString().split('T')[0];
-
-				// If the last data point is today, exclude it
-				if (lastDateStr === todayStr) {
-					workingData = workingData.slice(0, -1);
-				}
-			}
-		}
-
-		// Need at least 4 data points for a meaningful 15/85 split
-		if (workingData.length < 4) {
-			return null;
-		}
-
-		// Calculate 15% of data for recent period (minimum 1 point, but prefer more for daily data)
-		let recentCount = Math.ceil(workingData.length * 0.15);
-
-		// For daily/hourly data, ensure we get at least 7 days if available (to smooth weekends)
-		if ((by === 'day' || by === 'hour') && recentCount < 7 && workingData.length >= 10) {
-			recentCount = Math.min(7, Math.floor(workingData.length * 0.3));
-		}
-
-		// Ensure we have at least 1 point for recent and 1 for historical
-		recentCount = Math.max(1, Math.min(recentCount, workingData.length - 1));
-
-		// Split data into recent (last 15%) and historical (first 85%)
-		const recentPeriods = workingData.slice(-recentCount);
-		const historicalPeriods = workingData.slice(0, -recentCount);
-
-		if (historicalPeriods.length === 0) {
-			return null;
-		}
-
-		// Calculate averages for both periods
-		const recentAvg = recentPeriods.reduce((sum, item) => sum + item.value, 0) / recentPeriods.length;
-		const historicalAvg = historicalPeriods.reduce((sum, item) => sum + item.value, 0) / historicalPeriods.length;
-
-		// Avoid division by zero
-		if (historicalAvg === 0) {
-			return recentAvg > 0 ? { percent: 100, direction: 'up' } : { percent: 0, direction: 'flat' };
-		}
-
-		// Calculate percentage change from historical average
-		const percentChange = ((recentAvg - historicalAvg) / historicalAvg) * 100;
-
-		// Consider changes less than 0.5% as flat
-		if (Math.abs(percentChange) < 0.5) {
-			return { percent: 0, direction: 'flat' };
-		}
-
-		return {
-			percent: Math.abs(percentChange).toFixed(1),
-			direction: percentChange >= 0 ? 'up' : 'down'
-		};
-	} catch (err) {
-		console.error('Error calculating trend:', err);
+	const rows = data.filter(x => typeof x.value === 'number' && !isNaN(x.value));
+	if (rows.length < 2) {
 		return null;
 	}
+
+	if (kind === 'stock') {
+		// Today's reading against the one the window opened on.
+		const first = rows[0].value;
+		const last = rows[rows.length - 1].value;
+		if (first === 0) {
+			return last > 0 ? { percent: 100, direction: 'up' } : { percent: 0, direction: 'flat' };
+		}
+		return asTrend(((last - first) / Math.abs(first)) * 100);
+	}
+
+	// The period in progress is not comparable to finished ones, and the chart
+	// leaves it out too, so the two agree on what they are describing.
+	const complete = rows.length > 2 ? rows.slice(0, -1) : rows;
+	if (complete.length < HALF_MINIMUM * 2) {
+		return null;
+	}
+	const half = Math.floor(complete.length / 2);
+	const earlier = complete.slice(0, half);
+	const recent = complete.slice(-half);
+	const earlierMean = meanOf(earlier);
+	if (earlierMean === 0) {
+		return meanOf(recent) > 0 ? { percent: 100, direction: 'up' } : { percent: 0, direction: 'flat' };
+	}
+	return asTrend(((meanOf(recent) - earlierMean) / Math.abs(earlierMean)) * 100);
+};
+
+const trendExplanation = (kind, count) => {
+	if (kind === 'stock') {
+		return 'Compared with the start of this range.';
+	}
+	const half = Math.floor(Math.max(0, count - 1) / 2);
+	return `The last ${half} periods against the ${half} before them, current period excluded.`;
 };
 
 const TrendIndicator = (props) => {
-	const { data, by = 'day' } = props;
+	const { data, by = 'day', kind = 'flow' } = props;
 	const css = useStyles();
 
-	// Calculate trend: average of recent 15% vs average of historical 85%
-	const trend = calculateTrend(data, by);
+	const trend = calculateTrend(data, by, kind);
 
 	if (!trend) {
 		// Show a more informative message based on how much data we have
@@ -142,7 +99,7 @@ const TrendIndicator = (props) => {
 					  css.flatIcon;
 
 	return (
-		<span className={css.trendContainer}>
+		<span className={css.trendContainer} title={trendExplanation(kind, data ? data.length : 0)}>
 			<Icon className={iconClass} />
 			<span className={colorClass}>
 				{trend.direction === 'up' ? '+' :
@@ -198,6 +155,7 @@ const useStyles = makeStyles(theme => ({
 
 TrendIndicator.propTypes = {
 	data: PropTypes.array,
+	kind: PropTypes.string,
 	by: PropTypes.string
 };
 

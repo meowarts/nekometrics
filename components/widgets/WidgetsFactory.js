@@ -9,7 +9,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import ErrorIcon from '@material-ui/icons/Error';
 
 import { getWidgetSpine } from './WidgetsRepository';
-import { aggregateSeries } from './helpers';
+import { aggregateSeries, widgetSubtitle } from './helpers';
 import { getIconByName } from './common/icons';
 import useGlobalState from '~/libs/context';
 import WidgetBurgerIcon from './WidgetBurgerIcon';
@@ -84,6 +84,7 @@ const WidgetsFactory = (props) => {
     ? (getIconByName(widget?.settings?.icon) || widgetSpine.icon) : null;
   const widgetName = widget.name ? widget.name : 'NO TITLE';
 
+  const subtitle = useMemo(() => widgetSubtitle(widget, widgetSpine), [widget, widgetSpine]);
   const healthySpine = Boolean(widgetSpine && widgetSpine.icon && widgetSpine.widget && widgetSpine.settings);
   const nonRefreshable = NO_FORCE_REFRESH_WIDGETS.includes(`${widget.service}-${widget.type}`);
 
@@ -174,9 +175,9 @@ const WidgetsFactory = (props) => {
     if (data) {
       // Grouping happens here rather than in each widget, so every one of them
       // gets it, and so the headline number and the chart always agree.
-      const grouped = aggregateSeries(data, widget?.settings?.period?.groupBy,
-        widgetSpine.kind ? widgetSpine.kind : 'flow');
-      return (<DynamicWidget widget={widget} data={grouped} onRefreshMetrics={onRefreshMetrics} />);
+      const kind = widgetSpine.kind ? widgetSpine.kind : 'flow';
+      const grouped = aggregateSeries(data, widget?.settings?.period?.groupBy, kind);
+      return (<DynamicWidget widget={widget} data={grouped} kind={kind} onRefreshMetrics={onRefreshMetrics} />);
     }
     if (error) {
       return (<>
@@ -241,7 +242,10 @@ const WidgetsFactory = (props) => {
       {widget && <div className={css.widgetTitleContainer}>
         {DynamicWidget && <DynamicWidgetIcon className={css.widgetIcon} size='small' />}
         <Tooltip TransitionComponent={Zoom} placement="bottom-start" title={lastUpdateText} onOpen={updateLastUpdateText}>
-          <Typography variant='h3' className={css.widgetTitle}>{widgetName}</Typography>
+          <Typography variant='h3' className={css.widgetTitle}>
+            {widgetName}
+            {!!subtitle && <span className={css.widgetSubtitle}>{subtitle}</span>}
+          </Typography>
         </Tooltip>
 
         {lastErrorText && <Tooltip TransitionComponent={Zoom} placement="bottom-start" title={lastErrorText}>
@@ -287,6 +291,13 @@ const useStyles = makeStyles(theme => ({
     color: theme.common.COLOR_PRIMARY_NEKO,
     fontSize: theme.fonts.SIZE[18],
     marginRight: 5
+  },
+  widgetSubtitle: {
+    marginLeft: 6,
+    fontFamily: theme.fonts.FAMILY.ROBOTO,
+    fontSize: theme.fonts.SIZE[11],
+    opacity: 0.55,
+    fontWeight: 400
   },
   widgetTitle: {
     color: theme.common.COLOR_PRIMARY_NEKO,

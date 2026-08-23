@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { makeStyles, useTheme } from '@material-ui/core';
 import PropTypes from 'prop-types';
@@ -24,9 +24,15 @@ const colorNamed = (theme, name) => {
 const Portfolio = (props) => {
 	const css = useStyles();
 	const theme = useTheme();
-	const { widget, data } = props;
+	const { widget, data, kind } = props;
 
 	const total = useMemo(() => data.reduce((sum, x) => sum + x.value, 0), [data]);
+
+	// Printed on arrival, animated only when it moves. See MetricDisplay.
+	const opening = useRef(null);
+	if (opening.current === null && total !== null && total !== undefined) {
+		opening.current = parseInt(total);
+	}
 
 	const slices = useMemo(() => {
 		if (data.length <= MAX_SLICES) {
@@ -49,7 +55,8 @@ const Portfolio = (props) => {
 		<div className={css.container}>
 			<div className={css.glance}>
 				<div className={css.total}>
-					<CountUp preserveValue={true} separator=" " end={parseInt(total)} />
+					<CountUp preserveValue={true} separator=" "
+							start={opening.current !== null ? opening.current : 0} end={parseInt(total)} />
 				</div>
 				<div className={css.label}>
 					{data.length ? `across ${data.length} plugins` : 'nothing to show yet'}
@@ -59,7 +66,7 @@ const Portfolio = (props) => {
 			{!!slices.length && radius > 20 && <PieChart width={chartWidth} height={chartHeight}>
 				<Pie data={slices} dataKey="value" nameKey="name" cx="50%" cy="50%"
 					innerRadius={radius * 0.55} outerRadius={radius} paddingAngle={1}
-					stroke="none" isAnimationActive={true}>
+					stroke="none" isAnimationActive={false}>
 					{slices.map((slice, index) => (
 						<Cell key={slice.slug}
 							fill={slice.slug === 'others' ? colorNamed(theme, OTHERS_COLOR) : colors[index % colors.length]} />
@@ -127,7 +134,8 @@ SliceToolTip.propTypes = {
 
 Portfolio.propTypes = {
 	widget: PropTypes.object,
-	data: PropTypes.array
+	data: PropTypes.array,
+	kind: PropTypes.string
 };
 
 export default Portfolio;

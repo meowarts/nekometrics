@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { makeStyles, useTheme } from '@material-ui/core';
 import PropTypes from 'prop-types';
@@ -25,9 +25,15 @@ const lastDefined = (data, key) => {
 const Plugin = (props) => {
 	const css = useStyles();
 	const theme = useTheme();
-	const { widget, data } = props;
+	const { widget, data, kind } = props;
 
 	const installs = useMemo(() => lastDefined(data, 'installs'), [data]);
+
+	// Printed on arrival, animated only when it moves. See MetricDisplay.
+	const opening = useRef(null);
+	if (opening.current === null && installs !== null && installs !== undefined) {
+		opening.current = parseInt(installs);
+	}
 	const downloads = useMemo(() => lastDefined(data, 'value'), [data]);
 
 	// The second axis only earns its place once the number has actually moved.
@@ -51,7 +57,8 @@ const Plugin = (props) => {
 			<div className={css.glance}>
 				<div className={css.installs}>
 					{installs !== null
-						? <CountUp preserveValue={true} separator=" " end={parseInt(installs)} />
+						? <CountUp preserveValue={true} separator=" "
+							start={opening.current !== null ? opening.current : 0} end={parseInt(installs)} />
 						: '0'}
 				</div>
 				<div className={css.downloads}>
@@ -79,8 +86,8 @@ const Plugin = (props) => {
 				<Tooltip content={<PluginToolTip />} />
 				<CartesianGrid />
 
-				<Bar yAxisId="downloads" dataKey="value" fill={fillType} />
-				{installsCurve && <Line yAxisId="installs" type="stepAfter" dataKey="installs" dot={false}
+				<Bar isAnimationActive={false} yAxisId="downloads" dataKey="value" fill={fillType} />
+				{installsCurve && <Line isAnimationActive={false} yAxisId="installs" type="stepAfter" dataKey="installs" dot={false}
 					stroke={theme.common.COLOR_PRIMARY_NEKO} strokeWidth={2} connectNulls={true} />}
 			</ComposedChart>}
 		</div>
@@ -154,7 +161,8 @@ PluginToolTip.propTypes = {
 
 Plugin.propTypes = {
 	widget: PropTypes.object,
-	data: PropTypes.array
+	data: PropTypes.array,
+	kind: PropTypes.string
 };
 
 export default Plugin;
