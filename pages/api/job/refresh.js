@@ -7,6 +7,7 @@ const GetRefreshPool = new PQueue({ concurrency: 5 });
 import withMiddleware from '~/libs/middleware';
 import Services from '~/libs/services';
 import { FriendlyError } from '~/libs/services/errors';
+import { refreshMinutesFor, DEFAULT_REFRESH_MINUTES } from '~/libs/constants';
 
 const refreshWidgets = async (db, widgets) => {
   if (!widgets)
@@ -76,13 +77,24 @@ const Service = async (req, res) => {
   const startedOn = new Date();
   const newJob = await db.collection('Job').insertOne({ type: 'refresh', status: 'running', startedOn, finishedOn: null });
   const jobId = newJob.insertedId;
-  const fifteenMinutesAgo = process.env.NODE_ENV === 'production' ? 
-    DayJS().subtract(15, 'minutes').toDate() : DayJS().subtract(5, 'seconds').toDate();
-  const widgets = await db.collection('Widget').find({
+  // The query uses the shortest interval any widget can have, then each widget
+  // is held to its own: asking a source more often than it has anything new to
+  // say is just load, and enough of it gets the connections refused.
+  const isProduction = process.env.NODE_ENV === 'production';
+  const soonest = isProduction ?
+    DayJS().subtract(DEFAULT_REFRESH_MINUTES, 'minutes').toDate() : DayJS().subtract(5, 'seconds').toDate();
+  const candidates = await db.collection('Widget').find({
     refreshDaily: true, 
     enabled: true,
-    $or: [ { refreshedOn: { $lt: fifteenMinutesAgo } }, { refreshedOn: { $exists: false } } ]
+    $or: [ { refreshedOn: { $lt: soonest } }, { refreshedOn: { $exists: false } } ]
   }).toArray();
+  const widgets = !isProduction ? candidates : candidates.filter(widget => {
+    if (!widget.refreshedOn) {
+      return true;
+    }
+    const due = DayJS().subtract(refreshMinutesFor(widget), 'minutes').toDate();
+    return widget.refreshedOn < due;
+  });
 
   if (widgets.length > 0) {
     await refreshWidgets(db, widgets);
