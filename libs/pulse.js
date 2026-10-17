@@ -31,7 +31,9 @@ const toDays = (data) => {
     const key = dayKey(row.date);
     days.set(key, row.value);
   }
-  return [...days.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([key, value]) => ({ key, value }));
+  // Array.from, not a spread: this Babel setup compiles spreads for arrays only
+  // and spreading a Map iterator took the whole dashboard down.
+  return Array.from(days.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([key, value]) => ({ key, value }));
 };
 
 const shiftKey = (key, days) => DayJS(key).add(days, 'day').format('YYYY-MM-DD');
