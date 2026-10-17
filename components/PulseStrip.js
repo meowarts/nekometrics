@@ -178,7 +178,7 @@ const PulseStrip = () => {
   return (
     <section className={css.strip}>
       <header className={css.header}>
-        <h2 className={css.title}>This week</h2>
+        <span className={css.title}>This week</span>
         <span className={css.summary}>{summary}</span>
       </header>
       <p className={css.caption}>
@@ -234,7 +234,7 @@ const useStyles = makeStyles(theme => ({
   title: {
     margin: 0,
     fontFamily: theme.fonts.FAMILY.NOVA_FLAT,
-    fontSize: theme.fonts.SIZE[16],
+    fontSize: theme.fonts.SIZE[18],
     fontWeight: 400
   },
   summary: {

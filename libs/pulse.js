@@ -15,8 +15,11 @@ import DayJS from 'dayjs';
 const FLOW_STEADY_PERCENT = 15;
 // Under this, a percentage says more about the small base than the change.
 const FLOW_MINIMUM_BASE = 10;
-// A level moving less than this in thirty days is holding still.
-const STOCK_STEADY_PERCENT = 0.2;
+// A level moving less than this in thirty days is holding still. Both have to
+// be crossed: a big account bleeding slowly only shows in the percentage, and on
+// a small one two followers would otherwise be a trend.
+const STOCK_STEADY_PERCENT = 0.15;
+const STOCK_STEADY_COUNT = 10;
 // Older than this and the card is showing yesterday's news as today's.
 const STALE_DAYS = 2;
 
@@ -24,12 +27,12 @@ const dayKey = (date) => DayJS(date).subtract(12, 'hour').format('YYYY-MM-DD');
 
 const toDays = (data) => {
   const days = new Map();
-  // Not every card loads a list of days: some hand back a single object, and
-  // looping over that took the whole dashboard down.
-  if (!Array.isArray(data)) {
-    return [];
-  }
-  for (const row of data) {
+  // Google Analytics hands back { data, by } instead of the list itself, and
+  // looping over that object took the whole dashboard down. Only daily rows can
+  // be compared day by day, so a series already rolled into months is skipped.
+  const rows = Array.isArray(data) ? data
+    : (data && Array.isArray(data.data) && (data.by || 'day') === 'day') ? data.data : [];
+  for (const row of rows) {
     if (!row || !row.date || typeof row.value !== 'number' || isNaN(row.value)) {
       continue;
     }
@@ -107,11 +110,12 @@ const stockPulse = (days, target) => {
   const month = monthAgo !== null && days[0].key <= shiftKey(anchor, -30) ? last.value - monthAgo : null;
   const monthPercent = month !== null ? percent(last.value, monthAgo) : null;
 
+  const moved = month !== null && Math.abs(month) >= STOCK_STEADY_COUNT;
   let verdict = 'steady';
-  if (monthPercent !== null && monthPercent >= STOCK_STEADY_PERCENT) {
+  if (moved && monthPercent >= STOCK_STEADY_PERCENT) {
     verdict = 'good';
   }
-  else if (monthPercent !== null && monthPercent <= -STOCK_STEADY_PERCENT) {
+  else if (moved && monthPercent <= -STOCK_STEADY_PERCENT) {
     verdict = 'bad';
   }
 
