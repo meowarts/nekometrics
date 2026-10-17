@@ -174,7 +174,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
     gap: 6,
     height: PULSE_LINE_HEIGHT,
-    margin: '2px -4px -4px',
+    margin: '2px -4px 0',
     padding: '0 4px',
     border: 'none',
     borderRadius: 3,
