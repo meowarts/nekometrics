@@ -33,6 +33,23 @@ const goalForChart = (target, kind, by) => {
   return target * days / AVERAGE_MONTH_DAYS;
 };
 
+// The goal line is the chart's own colour, washed towards white, so it reads as
+// part of the card rather than a mark scribbled over it.
+const lighten = (hex, amount = 0.45) => {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!match) {
+    return '#FFFFFF';
+  }
+  const num = parseInt(match[1], 16);
+  const mix = (channel) => Math.round(channel + (255 - channel) * amount);
+  const [ r, g, b ] = [ (num >> 16) & 255, (num >> 8) & 255, num & 255 ].map(mix);
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+// Room above the goal when it is the highest thing on the chart, so its line
+// and label do not sit glued to the top edge.
+const GOAL_HEADROOM = 1.08;
+
 const StandardChart = (props) => {
   const css = useStyles();
   const theme = useTheme();
@@ -78,7 +95,10 @@ const StandardChart = (props) => {
           
         <XAxis dataKey="date" tickFormatter={xAxisTickFormatter} />
         <YAxis dataKey="value" tickFormatter={makeYAxisTickFormatter([ ...workData.map(x => x.value), goal ])} width={32}
-          allowDataOverflow={false} domain={[chartSettings.type === 'bar' ? 0 : 'auto', 'auto']} />
+          allowDataOverflow={false} domain={goal ? [
+            chartSettings.type === 'bar' ? 0 : (min) => Math.min(min, goal),
+            (max) => Math.max(max, goal * GOAL_HEADROOM)
+          ] : [chartSettings.type === 'bar' ? 0 : 'auto', 'auto']} />
         <Tooltip 
           content={<NekoToolTip yAxisLabel={yAxisLabelFormatter} />}
         />
@@ -86,8 +106,8 @@ const StandardChart = (props) => {
         <DynamicChartElement isAnimationActive={false} type="monotone" dataKey="value"
           dot={showDots ? { stroke: color, fill: 'white', fillOpacity: 1, strokeWidth: 2, r: 4.2 } : null} 
           stroke={color} fill={fillType} strokeWidth={strokeWidth} yAxisId={0}/>
-        {goal && <ReferenceLine y={goal} ifOverflow="extendDomain" stroke="#FFFFFF" strokeOpacity={0.7}
-          strokeDasharray="4 3" label={{ value: 'Goal', position: 'insideTopLeft', fill: '#FFFFFF', fontSize: 10 }} />}
+        {goal && <ReferenceLine y={goal} stroke={lighten(color)} strokeWidth={1.5}
+          strokeDasharray="5 4" label={{ value: 'Goal', position: 'insideTopLeft', fill: lighten(color), fontSize: 10 }} />}
       </DynamicChart>
     );
   }

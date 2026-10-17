@@ -4,6 +4,11 @@ import DayJS from 'dayjs';
 import { Dialog, TextField, Tooltip, Zoom } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import FlagOutlinedIcon from '@material-ui/icons/FlagOutlined';
+import TrendingUpIcon from '@material-ui/icons/TrendingUp';
+import TrendingDownIcon from '@material-ui/icons/TrendingDown';
+import TrendingFlatIcon from '@material-ui/icons/TrendingFlat';
+import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import SyncProblemIcon from '@material-ui/icons/SyncProblem';
 
 import useGlobalState from '~/libs/context';
 import { computePulse, FLOW_STEADY_PERCENT } from '~/libs/pulse';
@@ -119,6 +124,18 @@ const TargetDialog = ({ widget, kind, onClose }) => {
 
 // The word comes first because it is what the eye should land on; the numbers
 // after it are the evidence.
+// The colour lives in the icon alone: a whole bar of red or green on every
+// card shouted louder than the numbers it was meant to frame.
+const verdictIcon = (pulse) => {
+  if (pulse.verdict === 'stale') {
+    return SyncProblemIcon;
+  }
+  if (pulse.pace && pulse.verdict === 'good') {
+    return CheckCircleOutlineIcon;
+  }
+  return { good: TrendingUpIcon, steady: TrendingFlatIcon, bad: TrendingDownIcon }[pulse.verdict];
+};
+
 const verdictWord = (pulse) => {
   if (pulse.verdict === 'stale') {
     return 'Not updating';
@@ -152,6 +169,7 @@ const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
       return {
         verdict: pulse.verdict,
         word: verdictWord(pulse),
+        Icon: verdictIcon(pulse),
         text: describePace(pulse, widget.target, prefix) || describe(pulse, prefix)
       };
     }
@@ -170,8 +188,9 @@ const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
   return (
     <>
       <Tooltip TransitionComponent={Zoom} placement="bottom" title={explain(kind)}>
-        <button type="button" className={`${css.bar} ${css[line.verdict]}`} disabled={!canEdit}
+        <button type="button" className={css.bar} disabled={!canEdit}
           onMouseDown={(ev) => ev.stopPropagation()} onClick={onEdit}>
+          <line.Icon className={`${css.icon} ${css[line.verdict]}`} />
           <b className={css.word}>{line.word}</b>
           <span className={css.text}>{line.text}</span>
           {canEdit && <FlagOutlinedIcon className={widget.target ? css.flagSet : css.flag} />}
@@ -195,19 +214,21 @@ const useStyles = makeStyles(theme => ({
     padding: '0 10px',
     border: 'none',
     borderRadius: '0 0 3px 3px',
-    color: '#FFFFFF',
+    background: '#ffffff17',
+    color: '#ffffffc0',
     fontFamily: theme.fonts.FAMILY.ROBOTO,
     fontSize: 12,
     fontVariantNumeric: 'tabular-nums',
     cursor: 'pointer',
-    '&:hover': { filter: 'brightness(1.15)' },
+    '&:hover': { background: '#ffffff24' },
     '&:hover $flag': { opacity: 0.8 },
     '&:disabled': { cursor: 'default' }
   },
-  good: { background: '#2E8B3E' },
-  bad: { background: '#B5303A' },
-  stale: { background: '#B8661E' },
-  steady: { background: '#ffffff17', color: '#ffffffc0' },
+  icon: { flex: 'none', fontSize: 16 },
+  good: { color: theme.common.FONT_COLOR_POSITIVE },
+  bad: { color: '#FF5C5C' },
+  stale: { color: theme.colors.ORANGE },
+  steady: { color: '#ffffff80' },
   word: { flex: 'none', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 11 },
   text: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   flag: { flex: 'none', fontSize: 13, opacity: 0 },
