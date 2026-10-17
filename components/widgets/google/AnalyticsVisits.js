@@ -13,7 +13,7 @@ const AnalyticsVisits = (props) => {
 	return (
 		<div className={css.container}>
 			<MetricDisplay data={data} kind={kind} by={by} />
-			<StandardChart widget={widget} kind={kind} data={data} 
+			<StandardChart widget={widget} kind={kind} data={data} by={by}
 				xAxisTickFormatter={(value) => xAxisTickFormatter(value, by)}
 				yAxisLabelFormatter={(value) => 'Visits: ' + numberWithCommas(value)}
 			/>

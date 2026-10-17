@@ -1,4 +1,4 @@
-import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
 import PropTypes from 'prop-types';
 
 import { calculateChartSizes, NekoToolTip, xAxisTickFormatter, makeYAxisTickFormatter, defaultChartType } from '../helpers';
@@ -16,11 +16,29 @@ const DynamicChartElements = [
   { name: 'bar', component: Bar },
 ];
 
+const AVERAGE_MONTH_DAYS = 30.44;
+const BUCKET_DAYS = { day: 1, week: 7, month: AVERAGE_MONTH_DAYS, year: 365.25 };
+
+// A level's target is a number the line should reach. A flow's target is per
+// month, so it is drawn at the share of it one bar should hold: a daily bar is
+// measured against a thirtieth of the goal, not the whole of it.
+const goalForChart = (target, kind, by) => {
+  if (!target) {
+    return null;
+  }
+  if (kind === 'stock') {
+    return target;
+  }
+  const days = BUCKET_DAYS[by] || 1;
+  return target * days / AVERAGE_MONTH_DAYS;
+};
+
 const StandardChart = (props) => {
   const css = useStyles();
   const theme = useTheme();
 
-  const { widget, data, kind = 'flow', yAxisLabelFormatter = 'Value: %d' } = props;
+  const { widget, data, kind = 'flow', by, yAxisLabelFormatter = 'Value: %d' } = props;
+  const goal = goalForChart(widget.target, kind, by || widget.settings?.period?.groupBy || 'day');
 
   if (!(widget.h >= 2 && widget.w >= 2))
     return null;
@@ -59,7 +77,7 @@ const StandardChart = (props) => {
         </defs>
           
         <XAxis dataKey="date" tickFormatter={xAxisTickFormatter} />
-        <YAxis dataKey="value" tickFormatter={makeYAxisTickFormatter(workData.map(x => x.value))} width={32}
+        <YAxis dataKey="value" tickFormatter={makeYAxisTickFormatter([ ...workData.map(x => x.value), goal ])} width={32}
           allowDataOverflow={false} domain={[chartSettings.type === 'bar' ? 0 : 'auto', 'auto']} />
         <Tooltip 
           content={<NekoToolTip yAxisLabel={yAxisLabelFormatter} />}
@@ -68,6 +86,8 @@ const StandardChart = (props) => {
         <DynamicChartElement isAnimationActive={false} type="monotone" dataKey="value"
           dot={showDots ? { stroke: color, fill: 'white', fillOpacity: 1, strokeWidth: 2, r: 4.2 } : null} 
           stroke={color} fill={fillType} strokeWidth={strokeWidth} yAxisId={0}/>
+        {goal && <ReferenceLine y={goal} ifOverflow="extendDomain" stroke="#FFFFFF" strokeOpacity={0.7}
+          strokeDasharray="4 3" label={{ value: 'Goal', position: 'insideTopLeft', fill: '#FFFFFF', fontSize: 10 }} />}
       </DynamicChart>
     );
   }
@@ -107,6 +127,7 @@ StandardChart.propTypes = {
 	widget: PropTypes.object,
   data: PropTypes.array,
   kind: PropTypes.string,
+  by: PropTypes.string,
   yAxisLabelFormatter: PropTypes.any
 };
 
