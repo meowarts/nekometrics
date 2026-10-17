@@ -180,9 +180,10 @@ const useGlobalState = () => {
       const services = [ res.service, ...state.services.filter(x => x._id.toString() !== serviceId) ];
       dispatch({ type: SERVICES_UPDATED, payload: { services: services } });
     }
-    else {
+    else if (!res.reconnect) {
       alert(res.message);
     }
+    return res;
   }
 
   actions.deleteService = async (serviceId) => {

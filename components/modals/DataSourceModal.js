@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import DayJs from 'dayjs';
+import Router from 'next/router';
 
 import { Card, CardHeader, Avatar, IconButton, Dialog } from '@material-ui/core';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
@@ -21,10 +22,21 @@ function DataSourceModal() {
   const [ busyServices, setBusyServices ] = useState([]);
   const [ dialog, setDialog ] = useState();
 
-  const onRefresh = async (serviceId) => {
-    setBusyServices([...busyServices, serviceId]);
-    await refreshService(serviceId);
-    setBusyServices(busyServices.filter(x => x !== serviceId));
+  // A token the service revoked can only be replaced by logging in again. The OAuth
+  // callback updates the existing source in place, so the widgets keep their history.
+  const reconnect = (service) => Router.push(`/api/oauth/${service.service}`);
+
+  const onRefresh = async (service, serviceSpine) => {
+    const canReconnect = serviceSpine.mode === 'oauth';
+    if (service.status && canReconnect) {
+      return reconnect(service);
+    }
+    setBusyServices([...busyServices, service._id]);
+    const res = await refreshService(service._id);
+    if (res.reconnect && canReconnect) {
+      return reconnect(service);
+    }
+    setBusyServices(busyServices.filter(x => x !== service._id));
   }
 
   const onDelete = async (serviceId) => {
@@ -59,7 +71,9 @@ function DataSourceModal() {
               <Card key={service._id} style={{ marginBottom: 10 }}>
                 <SoftBusyOverlay busy={busyServices.includes(service._id)}>
                   <CardHeader title={service.name} 
-                    subheader={`${service.data.username} (${service.service}) - Refreshed: ${updatedOn}`} 
+                    subheader={service.status ?
+                      <span className={css.disconnected}>Disconnected. Click <AutorenewIcon className={css.refreshIcon} /> to log in again.</span> :
+                      `${service.data.username} (${service.service}) - Refreshed: ${updatedOn}`} 
                     avatar={<Avatar style={{ backgroundColor: serviceSpine.color }}><serviceSpine.icon /></Avatar>} 
                     action={
                       <>
@@ -72,7 +86,7 @@ function DataSourceModal() {
                             setDialog(null);
                           }}></ConfigDialog>
                         </>}
-                        <IconButton size="small" onClick={() => onRefresh(service._id)}><AutorenewIcon /></IconButton>
+                        <IconButton size="small" onClick={() => onRefresh(service, serviceSpine)}><AutorenewIcon /></IconButton>
                       </>}>
                   </CardHeader>
                 </SoftBusyOverlay>
@@ -98,6 +112,9 @@ const useStyles = makeStyles(theme => ({
     top: 5,
     height: 20,
     marginTop: -5
+  },
+  disconnected: {
+    color: theme.palette.error.main
   },
   dialog: {
     '& .MuiCard-root': { background: theme.common.SERVICE_CARD_BACKGROUND },

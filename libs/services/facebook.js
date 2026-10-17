@@ -458,7 +458,7 @@ class FacebookService {
 		// and the page tokens die with it, so the existing service gets the fresh accounts
 		// too, not just the user token, and its widgets are switched back on.
 		const existing = await this.db.collection('Service').findOne({
-			'data.username': username, service: 'facebook', userId: ObjectID(user._id)
+			service: 'facebook', userId: ObjectID(user._id), $or: [ { 'data.userid': userid }, { 'data.username': username } ]
 		});
 		if (existing) {
 			await this.db.collection('Service').updateOne({ _id: existing._id }, {

@@ -90,11 +90,11 @@ const Service = async (req, res) => {
       return res.status(200).json({ success: false, message: err.message });
     }
     else if (err instanceof ServiceDisconnectedError) {
-      return res.status(200).json({ success: false, message: err.message });
+      return res.status(200).json({ success: false, reconnect: true, message: err.message });
     }
     else if (err instanceof ServiceNotAuthorizedError) {
       await req.db.collection('Service').updateOne({ _id: ObjectID(serviceId) }, { $set: { 'status': 'not-authorized' } });
-      return res.status(200).json({ success: false, message: err.message });
+      return res.status(200).json({ success: false, reconnect: true, message: err.message });
     }
     console.log(err);
     return res.status(500).json({ success: false, message: 'There was an error.' });
