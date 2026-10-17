@@ -109,8 +109,9 @@ const TargetDialog = ({ widget, kind, onClose }) => {
           onKeyDown={(ev) => { if (ev.key === 'Enter' && valid) { save(parsed); } }} />
       </NekoDialogContentWrapper>
       <NekoDialogActionWrapper>
-        {widget.target && <NekoButton tertiary disabled={busy} onClick={() => save(null)}>Remove</NekoButton>}
-        <NekoButton primary disabled={busy || !valid} onClick={() => save(parsed)}>Save</NekoButton>
+        {widget.target && <NekoButton quarternary style={{ marginRight: 10 }} disabled={busy}
+          onClick={() => save(null)}>Remove</NekoButton>}
+        <NekoButton tertiary disabled={busy || !valid} onClick={() => save(parsed)}>Save</NekoButton>
       </NekoDialogActionWrapper>
     </Dialog>
   );
