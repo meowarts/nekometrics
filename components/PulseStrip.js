@@ -138,7 +138,15 @@ const PulseStrip = () => {
       if (entry.error && !entry.data) {
         return { ...base, verdict: 'stale', value: '', text: 'Not loading', title: entry.error };
       }
-      const pulse = computePulse(entry.data, kind, widget.target || null);
+      // The summary is a bonus on top of the cards, so a card it cannot read is
+      // left out of it rather than allowed to break the page.
+      let pulse = null;
+      try {
+        pulse = computePulse(entry.data, kind, widget.target || null);
+      }
+      catch (err) {
+        console.error('[Pulse] Could not read this card.', widget._id, err);
+      }
       if (!pulse) {
         return null;
       }

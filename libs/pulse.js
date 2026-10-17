@@ -24,15 +24,18 @@ const dayKey = (date) => DayJS(date).subtract(12, 'hour').format('YYYY-MM-DD');
 
 const toDays = (data) => {
   const days = new Map();
-  for (const row of data || []) {
+  // Not every card loads a list of days: some hand back a single object, and
+  // looping over that took the whole dashboard down.
+  if (!Array.isArray(data)) {
+    return [];
+  }
+  for (const row of data) {
     if (!row || !row.date || typeof row.value !== 'number' || isNaN(row.value)) {
       continue;
     }
     const key = dayKey(row.date);
     days.set(key, row.value);
   }
-  // Array.from, not a spread: this Babel setup compiles spreads for arrays only
-  // and spreading a Map iterator took the whole dashboard down.
   return Array.from(days.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([key, value]) => ({ key, value }));
 };
 
