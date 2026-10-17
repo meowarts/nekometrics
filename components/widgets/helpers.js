@@ -176,7 +176,7 @@ const xAxisTickFormatter = (date, by = 'day') => {
 
 // The status bar at the foot of the card (24px plus its gap) took the place of
 // the trend under the number, which had about 18px; the chart gives up the rest.
-const PULSE_LINE_RESERVE = 18;
+const PULSE_LINE_RESERVE = 22;
 
 const calculateChartSizes = (widget, reserve = PULSE_LINE_RESERVE) => {
 	const { h, w } = widget;

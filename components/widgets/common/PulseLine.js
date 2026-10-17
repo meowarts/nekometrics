@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import DayJS from 'dayjs';
 import { Dialog, TextField, Tooltip, Zoom } from '@material-ui/core';
@@ -14,6 +14,24 @@ import useGlobalState from '~/libs/context';
 import { computePulse, FLOW_STEADY_PERCENT } from '~/libs/pulse';
 import NekoButton from '~/components/buttons/NekoButton';
 import { NekoDialogActionWrapper, NekoDialogContentWrapper } from '~/components/elements/NekoElements';
+
+// The card's verdict, computed once and read by both the number at the top and
+// the bar at the foot, so the two can never describe different periods.
+const PulseContext = createContext(null);
+
+// The bar is a bonus on top of the card, so a series it cannot read leaves it
+// out rather than taking the card, or the dashboard, down with it.
+const safePulse = (data, kind, target, widgetId) => {
+  try {
+    return computePulse(data, kind, target || null);
+  }
+  catch (err) {
+    console.error('[Pulse] Could not read this card.', widgetId, err);
+    return null;
+  }
+};
+
+const periodName = (window) => (window === 7 ? 'week' : `${window / 7} weeks`);
 
 const MONEY_METRICS = [ 'earnings', 'potential' ];
 
@@ -41,10 +59,11 @@ const describe = (pulse, prefix) => {
     return `No data since ${DayJS(pulse.since).format('MMM D')}`;
   }
   if (pulse.kind === 'flow') {
+    // The number at the top already is this period, so the bar says how it compares.
     if (pulse.change === null) {
-      return `${compact(pulse.value, prefix)} this week`;
+      return `Was ${compact(pulse.previous, prefix)} the ${periodName(pulse.window)} before`;
     }
-    return `${compact(pulse.value, prefix)} this week, ${pulse.change > 0 ? '+' : ''}${pulse.change.toFixed(0)}%`;
+    return `${pulse.change > 0 ? '+' : ''}${pulse.change.toFixed(0)}% vs the ${periodName(pulse.window)} before`;
   }
   const bits = [];
   if (pulse.week !== null) {
@@ -78,8 +97,8 @@ const describePace = (pulse, target, prefix) => {
   return `${compact(pulse.pace.remaining)} to go, ${when}`;
 };
 
-const explain = (kind) => kind === 'flow'
-  ? `The last 7 finished days against the 7 before. Under ${FLOW_STEADY_PERCENT}% either way is steady.`
+const explain = (kind, pulse) => kind === 'flow'
+  ? `The last ${pulse.window} finished days against the ${pulse.window} before. Under ${FLOW_STEADY_PERCENT}% either way is steady.`
   : 'How far it moved in the last 7 and 30 days. Under 0.15% in 30 days is steady.';
 
 const TargetDialog = ({ widget, kind, onClose }) => {
@@ -154,30 +173,21 @@ const verdictWord = (pulse) => {
  * card, which the old headline trend could not be: it compared over the card's
  * own range, so +195% on one card and +2% on the next never meant the same.
  */
-const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
+const PulseLine = ({ widget, kind, pulse, editing, onEdit, onClose }) => {
   const css = useStyles();
 
   const line = useMemo(() => {
-    // The bar is a bonus on top of the card, so a series it cannot read leaves
-    // it out rather than taking the card, or the dashboard, down with it.
-    try {
-      const pulse = computePulse(data, kind, widget.target || null);
-      if (!pulse) {
-        return null;
-      }
-      const prefix = currencyOf(widget);
-      return {
-        verdict: pulse.verdict,
-        word: verdictWord(pulse),
-        Icon: verdictIcon(pulse),
-        text: describePace(pulse, widget.target, prefix) || describe(pulse, prefix)
-      };
-    }
-    catch (err) {
-      console.error('[Pulse] Could not read this card.', widget._id, err);
+    if (!pulse) {
       return null;
     }
-  }, [data, kind, widget]);
+    const prefix = currencyOf(widget);
+    return {
+      verdict: pulse.verdict,
+      word: verdictWord(pulse),
+      Icon: verdictIcon(pulse),
+      text: describePace(pulse, widget.target, prefix) || describe(pulse, prefix)
+    };
+  }, [pulse, widget]);
 
   if (!line) {
     return null;
@@ -187,7 +197,7 @@ const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
 
   return (
     <>
-      <Tooltip TransitionComponent={Zoom} placement="bottom" title={explain(kind)}>
+      <Tooltip TransitionComponent={Zoom} placement="bottom" title={explain(kind, pulse)}>
         <button type="button" className={css.bar} disabled={!canEdit}
           onMouseDown={(ev) => ev.stopPropagation()} onClick={onEdit}>
           <line.Icon className={`${css.icon} ${css[line.verdict]}`} />
@@ -240,10 +250,11 @@ const useStyles = makeStyles(theme => ({
 PulseLine.propTypes = {
   widget: PropTypes.object,
   kind: PropTypes.string,
-  data: PropTypes.any,
+  pulse: PropTypes.object,
   editing: PropTypes.bool,
   onEdit: PropTypes.func,
   onClose: PropTypes.func
 };
 
+export { PulseContext, safePulse };
 export default PulseLine;

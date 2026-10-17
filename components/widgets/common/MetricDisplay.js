@@ -1,9 +1,10 @@
-import { useMemo, useRef } from 'react';
+import { useContext, useMemo, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import CountUp from 'react-countup';
 
 import { getLastValue } from '~/components/widgets/helpers';
+import { PulseContext } from './PulseLine';
 
 const MetricDisplay = (props) => {
 	const { data, prefix = '', kind = 'flow' } = props;
@@ -15,7 +16,13 @@ const MetricDisplay = (props) => {
 	const shown = useMemo(
 		() => (kind !== 'stock' && data && data.length > 1) ? data.slice(0, -1) : data,
 		[data, kind]);
-	const last = useMemo(() => getLastValue(shown), [shown]);
+	// A flow's number is the same period the bar at the foot of the card judges,
+	// so the two read as one sentence. It used to be the last day alone: "$2,455"
+	// above "$11.4k this week" described two different things on one card.
+	const pulse = useContext(PulseContext);
+	const period = (kind === 'flow' && pulse && pulse.kind === 'flow') ? pulse : null;
+	const lastBucket = useMemo(() => getLastValue(shown), [shown]);
+	const last = period ? period.value : lastBucket;
 
 	// Counting up from zero on arrival means the board shows nothing true for
 	// the first seconds of every visit, across every card at once. The first
@@ -36,6 +43,7 @@ const MetricDisplay = (props) => {
 					'0'
 				)}
 			</div>
+			{period && <div className={css.period}>last {period.window} days</div>}
 		</div>
 	);
 };
@@ -52,6 +60,12 @@ const useStyles = makeStyles(theme => ({
 		fontSize: theme.fonts.SIZE[32],
 		fontWeight: 500,
 		marginBottom: 0
+	},
+	period: {
+		marginTop: -6,
+		fontSize: 11,
+		lineHeight: 1,
+		opacity: 0.5
 	}
 }));
 

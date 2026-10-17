@@ -6,7 +6,8 @@ import DayJS from 'dayjs';
  * so +195% on one and +2% on the next were never measuring the same thing.
  *
  * A flow (visits, revenue, downloads) is the last seven complete days against
- * the seven before. A level (followers, subscribers) is where it stands and how
+ * the seven before, or four weeks against four for a source that is quiet most
+ * days, where one week is too few events to mean anything. A level (followers, subscribers) is where it stands and how
  * far it moved in seven and in thirty days. A target, when there is one, turns
  * either into "on pace" or "behind", and that verdict wins over the trend.
  */
@@ -20,6 +21,11 @@ const FLOW_MINIMUM_BASE = 10;
 // a small one two followers would otherwise be a trend.
 const STOCK_STEADY_PERCENT = 0.15;
 const STOCK_STEADY_COUNT = 10;
+// A flow with something on fewer days than this, out of the last 28, is too
+// sparse for a single week: one booking more or less swung it by a third.
+const SPARSE_ACTIVE_DAYS = 14;
+const SHORT_WINDOW = 7;
+const LONG_WINDOW = 28;
 // Older than this and the card is showing yesterday's news as today's.
 const STALE_DAYS = 2;
 
@@ -69,10 +75,13 @@ const flowPulse = (days, today, target) => {
     return null;
   }
   const anchor = complete[complete.length - 1].key;
-  const thisWeek = sumBetween(complete, shiftKey(anchor, -6), anchor);
-  const lastWeek = sumBetween(complete, shiftKey(anchor, -13), shiftKey(anchor, -7));
-  const hasTwoWeeks = complete[0].key <= shiftKey(anchor, -13);
-  const change = (hasTwoWeeks && Math.abs(lastWeek) >= FLOW_MINIMUM_BASE) ? percent(thisWeek, lastWeek) : null;
+  const recentStart = shiftKey(anchor, -(LONG_WINDOW - 1));
+  const activeDays = complete.filter(x => x.key >= recentStart && x.value !== 0).length;
+  const window = activeDays < SPARSE_ACTIVE_DAYS ? LONG_WINDOW : SHORT_WINDOW;
+  const thisPeriod = sumBetween(complete, shiftKey(anchor, -(window - 1)), anchor);
+  const lastPeriod = sumBetween(complete, shiftKey(anchor, -(window * 2 - 1)), shiftKey(anchor, -window));
+  const hasTwoPeriods = complete[0].key <= shiftKey(anchor, -(window * 2 - 1));
+  const change = (hasTwoPeriods && Math.abs(lastPeriod) >= FLOW_MINIMUM_BASE) ? percent(thisPeriod, lastPeriod) : null;
 
   let verdict = 'steady';
   if (change !== null && change >= FLOW_STEADY_PERCENT) {
@@ -98,7 +107,7 @@ const flowPulse = (days, today, target) => {
     verdict = ratio >= 1 ? 'good' : ratio >= 0.9 ? 'steady' : 'bad';
   }
 
-  return { kind: 'flow', anchor, value: thisWeek, previous: lastWeek, change, verdict, pace };
+  return { kind: 'flow', anchor, window, value: thisPeriod, previous: lastPeriod, change, verdict, pace };
 };
 
 const stockPulse = (days, target) => {

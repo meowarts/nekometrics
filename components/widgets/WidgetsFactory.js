@@ -16,7 +16,7 @@ import WidgetBurgerIcon from './WidgetBurgerIcon';
 import SoftBusyOverlay from '~/components/SoftBusyOverlay';
 import { getMetrics, resetMetrics, forceGetMetrics } from '~/libs/requests';
 import { useInterval } from '~/libs/helpers';
-import PulseLine from './common/PulseLine';
+import PulseLine, { PulseContext, safePulse } from './common/PulseLine';
 import NekoButton from '../buttons/NekoButton';
 import { NO_FORCE_REFRESH_WIDGETS } from '~/libs/constants';
 
@@ -91,6 +91,8 @@ const WidgetsFactory = (props) => {
   const nonRefreshable = NO_FORCE_REFRESH_WIDGETS.includes(`${widget.service}-${widget.type}`);
   const widgetKind = widgetSpine && widgetSpine.kind ? widgetSpine.kind : 'flow';
   const hasPulse = widget.service !== 'fake' && (widgetKind === 'flow' || widgetKind === 'stock');
+  const pulse = useMemo(() => (hasPulse && data) ? safePulse(data, widgetKind, widget.target, widget._id) : null,
+    [hasPulse, data, widgetKind, widget.target, widget._id]);
 
   useEffect(() => {
     //console.log('Something changed.', widget, [widget.serviceId, widget.settings]);
@@ -265,10 +267,12 @@ const WidgetsFactory = (props) => {
       </div>}
 
       {/* CONTENT */}
-      {widgetContent}
+      <PulseContext.Provider value={pulse}>
+        {widgetContent}
+      </PulseContext.Provider>
 
       {/* WEEKLY VERDICT */}
-      {hasPulse && data && <PulseLine widget={widget} kind={widgetKind} data={data}
+      {pulse && <PulseLine widget={widget} kind={widgetKind} pulse={pulse}
         editing={targetModal} onEdit={() => setTargetModal(true)} onClose={() => setTargetModal(false)} />}
 
       {/* SETTINGS */}
