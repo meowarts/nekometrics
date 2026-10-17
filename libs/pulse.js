@@ -6,8 +6,8 @@ import DayJS from 'dayjs';
  * so +195% on one and +2% on the next were never measuring the same thing.
  *
  * A flow (visits, revenue, downloads) is the last seven complete days against
- * the seven before, or four weeks against four for a source that is quiet most
- * days, where one week is too few events to mean anything. A level (followers, subscribers) is where it stands and how
+ * the seven before, or four weeks against four for a lumpy source (a handful of
+ * bookings, some days nothing, some days 383), where one week means little. A level (followers, subscribers) is where it stands and how
  * far it moved in seven and in thirty days. A target, when there is one, turns
  * either into "on pace" or "behind", and that verdict wins over the trend.
  */
@@ -21,9 +21,10 @@ const FLOW_MINIMUM_BASE = 10;
 // a small one two followers would otherwise be a trend.
 const STOCK_STEADY_PERCENT = 0.15;
 const STOCK_STEADY_COUNT = 10;
-// A flow with something on fewer days than this, out of the last 28, is too
-// sparse for a single week: one booking more or less swung it by a third.
-const SPARSE_ACTIVE_DAYS = 14;
+// Over the last 28 days, a flow whose days vary by more than this compared with
+// their average is too lumpy for a single week. Traffic and sales sit around 0.3,
+// Travelpayouts (0 one day, 383 the next) around 1.3.
+const LUMPY_VARIATION = 0.9;
 const SHORT_WINDOW = 7;
 const LONG_WINDOW = 28;
 // Older than this and the card is showing yesterday's news as today's.
@@ -66,6 +67,21 @@ const valueAt = (days, key) => {
 
 const percent = (now, before) => (before ? ((now - before) / Math.abs(before)) * 100 : null);
 
+const isLumpy = (complete, anchor) => {
+  const byKey = new Map(complete.map(x => [ x.key, x.value ]));
+  const values = [];
+  for (let i = 0; i < LONG_WINDOW; i++) {
+    const key = shiftKey(anchor, -i);
+    values.push(byKey.has(key) ? byKey.get(key) : 0);
+  }
+  const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+  if (mean <= 0) {
+    return false;
+  }
+  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+  return Math.sqrt(variance) / mean > LUMPY_VARIATION;
+};
+
 const flowPulse = (days, today, target) => {
   // Today is still happening, so the week ends on the last finished day. The
   // last day present, not yesterday by the calendar: a source that reports a day
@@ -75,9 +91,7 @@ const flowPulse = (days, today, target) => {
     return null;
   }
   const anchor = complete[complete.length - 1].key;
-  const recentStart = shiftKey(anchor, -(LONG_WINDOW - 1));
-  const activeDays = complete.filter(x => x.key >= recentStart && x.value !== 0).length;
-  const window = activeDays < SPARSE_ACTIVE_DAYS ? LONG_WINDOW : SHORT_WINDOW;
+  const window = isLumpy(complete, anchor) ? LONG_WINDOW : SHORT_WINDOW;
   const thisPeriod = sumBetween(complete, shiftKey(anchor, -(window - 1)), anchor);
   const lastPeriod = sumBetween(complete, shiftKey(anchor, -(window * 2 - 1)), shiftKey(anchor, -window));
   const hasTwoPeriods = complete[0].key <= shiftKey(anchor, -(window * 2 - 1));
