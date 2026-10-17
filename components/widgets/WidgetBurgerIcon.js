@@ -7,6 +7,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import DeleteIcon from '@material-ui/icons/Delete';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
+import FlagOutlinedIcon from '@material-ui/icons/FlagOutlined';
 import PropTypes from 'prop-types';
 
 import useGlobalState from '~/libs/context';
@@ -17,7 +18,7 @@ const avoidEventPropagation = (ev) => { ev.stopPropagation() };
 
 const WidgetBurgerIcon = (props) => {
   const css = useStyles();
-  const { healthySpine, widget, onRefreshMetrics, onOpenSettings, disabled = false } = props;
+  const { healthySpine, widget, onRefreshMetrics, onOpenSettings, onSetTarget, disabled = false } = props;
   const [ menuAnchorEl, setMenuAnchorEl ] = useState(null);
   const [ dialog, setDialog ] = useState(false);
   const { deleteWidget } = useGlobalState(); 
@@ -49,6 +50,9 @@ const WidgetBurgerIcon = (props) => {
 
         {healthySpine && <BurgerMenuItem label="Settings" icon={<SettingsIcon />} 
           onClick={() => menuSettingsClose() || onOpenSettings()} />}
+
+        {onSetTarget && <BurgerMenuItem label="Target" icon={<FlagOutlinedIcon />}
+          onClick={() => menuSettingsClose() || onSetTarget()} />}
 
         <BurgerMenuItem label="Move" icon={<CompareArrowsIcon />}
           onClick={() => menuSettingsClose() || setDialog('move')} />
@@ -82,6 +86,7 @@ WidgetBurgerIcon.propTypes = {
   healthySpine: PropTypes.bool,
   onOpenSettings: PropTypes.func,
   onRefreshMetrics: PropTypes.func,
+  onSetTarget: PropTypes.func,
   disabled: PropTypes.bool
 };
 

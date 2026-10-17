@@ -11,7 +11,6 @@ import AddActionButton from '~/components/buttons/AddActionButton';
 import Layout from '~/components/Layout';
 import Assistant from '~/components/Assistant';
 import WidgetsFactory from '~/components/widgets/WidgetsFactory';
-import PulseStrip from '~/components/PulseStrip';
 import useGlobalState from '~/libs/context';
 import withAuth from '~/libs/withAuth';
 
@@ -105,7 +104,6 @@ const Dashboard = () => {
 
 			{!user && <Alert severity="error" style={{ margin: 10 }}>You need to be connected to access your dashboard. <a href='/'>Click here</a> to go back to the homepage.</Alert>}
 			{user && <Assistant />}
-			{user && <PulseStrip />}
 
 			<Hidden only={['xs', 'sm']}>
 				<GridLayout cols={8} rowHeight={125} width={1040} 

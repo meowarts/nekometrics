@@ -16,7 +16,7 @@ import WidgetBurgerIcon from './WidgetBurgerIcon';
 import SoftBusyOverlay from '~/components/SoftBusyOverlay';
 import { getMetrics, resetMetrics, forceGetMetrics } from '~/libs/requests';
 import { useInterval } from '~/libs/helpers';
-import { publishPulse, forgetPulse } from '~/libs/pulseStore';
+import PulseLine from './common/PulseLine';
 import NekoButton from '../buttons/NekoButton';
 import { NO_FORCE_REFRESH_WIDGETS } from '~/libs/constants';
 
@@ -69,6 +69,7 @@ const WidgetsFactory = (props) => {
   const { widget, updateSpeed = 'normal' } = props;
   const [ data, setData ] = useState();
   const [ settingsModal, setSettingsModal ] = useState();
+  const [ targetModal, setTargetModal ] = useState(false);
   const [ refreshInterval, setRefreshInterval ] = useState(getRandomInterval(updateSpeed));
   const [ lastUpdate, setLastUpdate ] = useState();
   const [ lastRefresh, setLastRefresh ] = useState();
@@ -88,19 +89,14 @@ const WidgetsFactory = (props) => {
   const subtitle = useMemo(() => widgetSubtitle(widget, widgetSpine), [widget, widgetSpine]);
   const healthySpine = Boolean(widgetSpine && widgetSpine.icon && widgetSpine.widget && widgetSpine.settings);
   const nonRefreshable = NO_FORCE_REFRESH_WIDGETS.includes(`${widget.service}-${widget.type}`);
+  const widgetKind = widgetSpine && widgetSpine.kind ? widgetSpine.kind : 'flow';
+  const hasPulse = widget.service !== 'fake' && (widgetKind === 'flow' || widgetKind === 'stock');
 
   useEffect(() => {
     //console.log('Something changed.', widget, [widget.serviceId, widget.settings]);
     widget && onRefreshMetrics();
   }, [widget.settings]);
 
-  useEffect(() => {
-    if (data || error) {
-      publishPulse(widget._id, { data, error });
-    }
-  }, [data, error]);
-
-  useEffect(() => () => forgetPulse(widget._id), [widget._id]);
 
   // It's important to use a hook in order to avoid that to be re-created everytime the function
   // is re-ran. Also, the randomized refresh interval allows the client to update the widgets
@@ -264,11 +260,16 @@ const WidgetsFactory = (props) => {
         <WidgetBurgerIcon css={css} healthySpine={healthySpine} widget={widget}
           disabled={widget.role === 'read' || !!isBusy}
           onOpenSettings={() => setSettingsModal(true)}
+          onSetTarget={hasPulse ? () => setTargetModal(true) : null}
           onRefreshMetrics={() => onRefreshMetrics(widget)} />
       </div>}
 
       {/* CONTENT */}
       {widgetContent}
+
+      {/* WEEKLY VERDICT */}
+      {hasPulse && data && <PulseLine widget={widget} kind={widgetKind} data={data}
+        editing={targetModal} onEdit={() => setTargetModal(true)} onClose={() => setTargetModal(false)} />}
 
       {/* SETTINGS */}
       {healthySpine && <Dialog fullWidth={true} open={!!settingsModal} 
