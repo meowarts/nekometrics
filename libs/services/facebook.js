@@ -393,17 +393,17 @@ class FacebookService {
 
 		if (reply.error) {
 			if (reply.error.code === 190 && reply.error.error_subcode === 458) {
-				console.error('Error 458 with Facebook: App not Authorized!', { path, params, error: reply.error });
+				console.error('Error 458 with Facebook: App not Authorized!', { path, error: reply.error });
 				await this.db.collection('Service').updateOne({ _id: service._id }, { $set: { 'status': 'not-authorized' } });
 				throw new ServiceNotAuthorizedError();
 			}
 			else if (reply.error.code === 190 && reply.error.error_subcode === 460) {
-				console.error('Error 460 with Facebook: Disconnected!', { path, params, error: reply.error });
+				console.error('Error 460 with Facebook: Disconnected!', { path, error: reply.error });
 				await this.db.collection('Service').updateOne({ _id: service._id }, { $set: { 'status': 'disconnected' } });
-				throw new ServiceDisconnectedError();
+				throw new ServiceDisconnectedError('Facebook ended the session (password change or security check). Add Facebook again in Data Sources to reconnect it.');
 			}
 			else {
-				console.error('Unhandled error with FetchIt Facebook', { path, params, error: reply.error });
+				console.error('Unhandled error with FetchIt Facebook', { path, error: reply.error });
 			}
 			return null;
 		}
@@ -447,21 +447,31 @@ class FacebookService {
 			updatedOn: now
 		}
 		const { userid, username, accounts } = await this.getUserAndPages(service);
-		const sameServices = await this.db.collection('Service').find({ 'data.username': username, service: 'facebook' }).toArray();
-		if (sameServices.some(x => x.userId.toString() === user._id.toString())) {
-			let svc = sameServices.find(x => x.userId.toString() === user._id.toString());
-			await this.db.collection('Service').updateOne({ _id: svc._id }, { $set: { data: {
-				access_token: access_token,
-				expires_at: DayJS().add(60, 'days').toDate(),
-			} }});
-			throw new FriendlyError('A service has been already enabled between your Nekometrics account and your Facebook account. The token has been refreshed (' + access_token + ').');
-		}
 		const pagesCount = accounts ? accounts.length : 0;
 		const igCount = pagesCount ? accounts.filter(x => !!x.instagram).length : 0;
 		service.name = `Facebook (${pagesCount} page${pagesCount ? 's' : ''}, ${igCount} instagram profile${igCount ? 's' : ''})`;
 		service.data.userid = userid;
 		service.data.username = username;
 		service.data.accounts = accounts;
+
+		// Reconnecting is the only way out of a session Facebook invalidated (error 460),
+		// and the page tokens die with it, so the existing service gets the fresh accounts
+		// too, not just the user token, and its widgets are switched back on.
+		const existing = await this.db.collection('Service').findOne({
+			'data.username': username, service: 'facebook', userId: ObjectID(user._id)
+		});
+		if (existing) {
+			await this.db.collection('Service').updateOne({ _id: existing._id }, {
+				$set: { name: service.name, data: service.data, updatedOn: now },
+				$unset: { status: '' }
+			});
+			await this.db.collection('Widget').updateMany(
+				{ 'settings.serviceId': { $in: [existing._id.toString(), existing._id] } },
+				{ $set: { enabled: true, lastIssue: null } }
+			);
+			console.log(`[FB] Reconnected Service for ${username} (${existing._id})`);
+			return { ...existing, name: service.name, data: service.data, status: undefined, updatedOn: now };
+		}
 		const res = await this.db.collection('Service').insertOne(service);
 		service._id = res.insertedId;
 		console.log(`[FB] Added Service for ${service.data.username} (${service._id})`);
