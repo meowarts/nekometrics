@@ -48,7 +48,7 @@ const Portfolio = (props) => {
 	}, [data]);
 
 	const colors = useMemo(() => SLICE_COLORS.map(name => colorNamed(theme, name)), [theme]);
-	const { chartWidth, chartHeight } = calculateChartSizes(widget, 0);
+	const { chartWidth, chartHeight } = calculateChartSizes(widget);
 	const radius = Math.max(0, Math.min(chartWidth, chartHeight) / 2);
 
 	return (

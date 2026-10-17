@@ -3,11 +3,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import CountUp from 'react-countup';
 
-import TrendIndicator from './TrendIndicator';
 import { getLastValue } from '~/components/widgets/helpers';
 
 const MetricDisplay = (props) => {
-	const { data, prefix = '', by = 'day', kind = 'flow' } = props;
+	const { data, prefix = '', kind = 'flow' } = props;
 	const css = useStyles();
 	// The chart leaves out the period in progress, so the number must too, or the
 	// two disagree: a Sunday morning showed "0" above a chart whose last bar was
@@ -37,9 +36,6 @@ const MetricDisplay = (props) => {
 					'0'
 				)}
 			</div>
-			<div className={css.trendLabel}>
-				<TrendIndicator data={data} by={by} kind={kind} />
-			</div>
 		</div>
 	);
 };
@@ -55,17 +51,13 @@ const useStyles = makeStyles(theme => ({
 	last: {
 		fontSize: theme.fonts.SIZE[32],
 		fontWeight: 500,
-		marginBottom: '-5px'
-	},
-	trendLabel: {
-		marginTop: 0
+		marginBottom: 0
 	}
 }));
 
 MetricDisplay.propTypes = {
 	data: PropTypes.array,
 	prefix: PropTypes.string,
-	by: PropTypes.string,
 	kind: PropTypes.string
 };
 

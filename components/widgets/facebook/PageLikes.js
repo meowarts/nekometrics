@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
-import TrendIndicator from '../common/TrendIndicator';
 import { getLastValue } from '~/components/widgets/helpers';
 import StandardChart from '../common/StandardChart';
 import { LatestValue } from '../common/LatestValue';
@@ -16,7 +15,6 @@ const PageLikes = (props) => {
 		<div className={css.container}>
 			<div className={css.glance}>
 				<LatestValue value={parseInt(last)} />
-				<TrendIndicator data={data} />
 			</div>
 			<StandardChart widget={widget} kind={kind} data={data} yAxisLabelFormatter='Followers: %d' />
 		</div>

@@ -174,13 +174,10 @@ const xAxisTickFormatter = (date, by = 'day') => {
 	return DayJS(date).format('MM/DD');
 };
 
-// Room left at the foot of the card for the weekly verdict line.
-const PULSE_LINE_RESERVE = 20;
-
-const calculateChartSizes = (widget, reserve = PULSE_LINE_RESERVE) => {
+const calculateChartSizes = (widget) => {
 	const { h, w } = widget;
 	let chartWidth = (124 * w) - 20;
-	let chartHeight = (130 * h) - 28 - 65 - reserve;
+	let chartHeight = (130 * h) - 28 - 65;
 	if (chartWidth < 0 || chartHeight < 0) {
 		chartWidth = 0;
 		chartHeight = 0;
