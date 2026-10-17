@@ -174,10 +174,14 @@ const xAxisTickFormatter = (date, by = 'day') => {
 	return DayJS(date).format('MM/DD');
 };
 
-const calculateChartSizes = (widget) => {
+// The status bar at the foot of the card (24px plus its gap) took the place of
+// the trend under the number, which had about 18px; the chart gives up the rest.
+const PULSE_LINE_RESERVE = 18;
+
+const calculateChartSizes = (widget, reserve = PULSE_LINE_RESERVE) => {
 	const { h, w } = widget;
 	let chartWidth = (124 * w) - 20;
-	let chartHeight = (130 * h) - 28 - 65;
+	let chartHeight = (130 * h) - 28 - 65 - reserve;
 	if (chartWidth < 0 || chartHeight < 0) {
 		chartWidth = 0;
 		chartHeight = 0;

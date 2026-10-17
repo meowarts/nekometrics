@@ -116,16 +116,31 @@ const TargetDialog = ({ widget, kind, onClose }) => {
   );
 };
 
+// The word comes first because it is what the eye should land on; the numbers
+// after it are the evidence.
+const verdictWord = (pulse) => {
+  if (pulse.verdict === 'stale') {
+    return 'Not updating';
+  }
+  if (pulse.pace) {
+    if (pulse.pace.reached) {
+      return 'Reached';
+    }
+    return { good: 'On pace', steady: 'Close', bad: 'Behind' }[pulse.verdict];
+  }
+  return { good: 'Up', steady: 'Steady', bad: 'Down' }[pulse.verdict];
+};
+
 /**
- * One line at the foot of the card, judged on the same rules for every card,
- * which the headline trend cannot be: it compares over the card's own range,
- * so +195% on one card and +2% on the next were never measuring the same thing.
+ * A status bar along the foot of the card, judged on the same rules for every
+ * card, which the old headline trend could not be: it compared over the card's
+ * own range, so +195% on one card and +2% on the next never meant the same.
  */
 const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
   const css = useStyles();
 
   const line = useMemo(() => {
-    // The line is a bonus on top of the card, so a series it cannot read leaves
+    // The bar is a bonus on top of the card, so a series it cannot read leaves
     // it out rather than taking the card, or the dashboard, down with it.
     try {
       const pulse = computePulse(data, kind, widget.target || null);
@@ -135,6 +150,7 @@ const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
       const prefix = currencyOf(widget);
       return {
         verdict: pulse.verdict,
+        word: verdictWord(pulse),
         text: describePace(pulse, widget.target, prefix) || describe(pulse, prefix)
       };
     }
@@ -153,10 +169,10 @@ const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
   return (
     <>
       <Tooltip TransitionComponent={Zoom} placement="bottom" title={explain(kind)}>
-        <button type="button" className={css.line} disabled={!canEdit}
+        <button type="button" className={`${css.bar} ${css[line.verdict]}`} disabled={!canEdit}
           onMouseDown={(ev) => ev.stopPropagation()} onClick={onEdit}>
-          <span className={`${css.dot} ${css[line.verdict]}`} />
-          <span className={`${css.text} ${css[line.verdict + 'Text']}`}>{line.text}</span>
+          <b className={css.word}>{line.word}</b>
+          <span className={css.text}>{line.text}</span>
           {canEdit && <FlagOutlinedIcon className={widget.target ? css.flagSet : css.flag} />}
         </button>
       </Tooltip>
@@ -165,41 +181,36 @@ const PulseLine = ({ widget, kind, data, editing, onEdit, onClose }) => {
   );
 };
 
-const PULSE_LINE_HEIGHT = 18;
-
 const useStyles = makeStyles(theme => ({
-  line: {
+  // Flush with the card's edges: the container pads its content by 10px.
+  bar: {
+    flex: 'none',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    height: PULSE_LINE_HEIGHT,
-    margin: '2px -4px 0',
-    padding: '0 4px',
+    height: 24,
+    margin: '4px -10px -10px',
+    padding: '0 10px',
     border: 'none',
-    borderRadius: 3,
-    background: 'transparent',
-    color: theme.common.COLOR_PRIMARY_NEKO,
+    borderRadius: '0 0 3px 3px',
+    color: '#FFFFFF',
     fontFamily: theme.fonts.FAMILY.ROBOTO,
     fontSize: 12,
     fontVariantNumeric: 'tabular-nums',
     cursor: 'pointer',
-    '&:hover': { background: '#ffffff0d' },
-    '&:hover $flag': { opacity: 0.6 },
+    '&:hover': { filter: 'brightness(1.15)' },
+    '&:hover $flag': { opacity: 0.8 },
     '&:disabled': { cursor: 'default' }
   },
-  dot: { flex: 'none', width: 7, height: 7, borderRadius: '50%' },
-  good: { background: theme.common.FONT_COLOR_POSITIVE },
-  bad: { background: theme.common.FONT_COLOR_NEGATIVE },
-  stale: { background: theme.colors.ORANGE },
-  steady: { background: '#ffffff40' },
+  good: { background: '#2E8B3E' },
+  bad: { background: '#B5303A' },
+  stale: { background: '#B8661E' },
+  steady: { background: '#ffffff17', color: '#ffffffc0' },
+  word: { flex: 'none', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 11 },
   text: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  goodText: { color: theme.common.FONT_COLOR_POSITIVE },
-  badText: { color: '#ff6b6b' },
-  staleText: { color: theme.colors.ORANGE },
-  steadyText: { opacity: 0.65 },
   flag: { flex: 'none', fontSize: 13, opacity: 0 },
-  flagSet: { flex: 'none', fontSize: 13, opacity: 0.7 },
+  flagSet: { flex: 'none', fontSize: 13, opacity: 0.8 },
   dialogTitle: { margin: '20px 24px 0' },
   dialogText: { marginTop: 0, fontSize: theme.fonts.SIZE[14] }
 }));
@@ -213,5 +224,4 @@ PulseLine.propTypes = {
   onClose: PropTypes.func
 };
 
-export { PULSE_LINE_HEIGHT };
 export default PulseLine;
