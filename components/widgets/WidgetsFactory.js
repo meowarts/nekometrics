@@ -16,6 +16,7 @@ import WidgetBurgerIcon from './WidgetBurgerIcon';
 import SoftBusyOverlay from '~/components/SoftBusyOverlay';
 import { getMetrics, resetMetrics, forceGetMetrics } from '~/libs/requests';
 import { useInterval } from '~/libs/helpers';
+import { publishPulse, forgetPulse } from '~/libs/pulseStore';
 import NekoButton from '../buttons/NekoButton';
 import { NO_FORCE_REFRESH_WIDGETS } from '~/libs/constants';
 
@@ -88,10 +89,18 @@ const WidgetsFactory = (props) => {
   const healthySpine = Boolean(widgetSpine && widgetSpine.icon && widgetSpine.widget && widgetSpine.settings);
   const nonRefreshable = NO_FORCE_REFRESH_WIDGETS.includes(`${widget.service}-${widget.type}`);
 
-  useEffect(() => { 
+  useEffect(() => {
     //console.log('Something changed.', widget, [widget.serviceId, widget.settings]);
     widget && onRefreshMetrics();
   }, [widget.settings]);
+
+  useEffect(() => {
+    if (data || error) {
+      publishPulse(widget._id, { data, error });
+    }
+  }, [data, error]);
+
+  useEffect(() => () => forgetPulse(widget._id), [widget._id]);
 
   // It's important to use a hook in order to avoid that to be re-created everytime the function
   // is re-ran. Also, the randomized refresh interval allows the client to update the widgets
