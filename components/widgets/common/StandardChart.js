@@ -47,8 +47,20 @@ const lighten = (hex, amount = 0.45) => {
 };
 
 // Room above the goal when it is the highest thing on the chart, so its line
-// and label do not sit glued to the top edge.
-const GOAL_HEADROOM = 1.08;
+// and label do not sit glued to the top edge. A share of the visible range, not
+// of the value: 8% of 57,000 pushed a follower chart's top to 61.6k and
+// flattened the curve it was meant to frame.
+const GOAL_HEADROOM = 0.12;
+
+const goalDomain = (values, goal, isBar) => {
+  const nums = values.filter(v => typeof v === 'number' && !isNaN(v));
+  const low = isBar ? 0 : Math.min(goal, ...nums);
+  const high = Math.max(...nums);
+  if (goal < high) {
+    return [ low, 'auto' ];
+  }
+  return [ low, goal + (goal - low) * GOAL_HEADROOM ];
+};
 
 const StandardChart = (props) => {
   const css = useStyles();
@@ -95,10 +107,8 @@ const StandardChart = (props) => {
           
         <XAxis dataKey="date" tickFormatter={xAxisTickFormatter} />
         <YAxis dataKey="value" tickFormatter={makeYAxisTickFormatter([ ...workData.map(x => x.value), goal ])} width={32}
-          allowDataOverflow={false} domain={goal ? [
-            chartSettings.type === 'bar' ? 0 : (min) => Math.min(min, goal),
-            (max) => Math.max(max, goal * GOAL_HEADROOM)
-          ] : [chartSettings.type === 'bar' ? 0 : 'auto', 'auto']} />
+          allowDataOverflow={false} domain={goal ? goalDomain(workData.map(x => x.value), goal, chartSettings.type === 'bar')
+            : [chartSettings.type === 'bar' ? 0 : 'auto', 'auto']} />
         <Tooltip 
           content={<NekoToolTip yAxisLabel={yAxisLabelFormatter} />}
         />
