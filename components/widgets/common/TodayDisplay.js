@@ -24,7 +24,10 @@ const Amount = ({ value }) => {
 
 Amount.propTypes = { value: PropTypes.number };
 
-const Gauge = ({ value, goal, expected, color, css }) => {
+// Styles are read here, not passed down: babel-plugin-styled-components
+// claims any prop named css, and the gauge received undefined.
+const Gauge = ({ value, goal, expected, color }) => {
+  const css = useStyles();
   const filled = Math.min(value / goal, 1) * 100;
   return (
     <div className={css.gauge}>
@@ -38,8 +41,7 @@ Gauge.propTypes = {
   value: PropTypes.number,
   goal: PropTypes.number,
   expected: PropTypes.number,
-  color: PropTypes.string,
-  css: PropTypes.object
+  color: PropTypes.string
 };
 
 /**
@@ -87,7 +89,7 @@ const TodayDisplay = ({ widget, data, color }) => {
       <div className={css.column}>
         <div className={css.label}>Yesterday</div>
         <div className={css.value}><Amount value={yesterday} /></div>
-        {goal && <Gauge value={yesterday} goal={goal} color={color} css={css} />}
+        {goal && <Gauge value={yesterday} goal={goal} color={color} />}
         <div className={css.note}>{yesterdayNote()}</div>
       </div>
       <div className={css.column}>
@@ -95,7 +97,7 @@ const TodayDisplay = ({ widget, data, color }) => {
         <div className={css.value}><Amount value={today} /></div>
         {goal && <Tooltip TransitionComponent={Zoom} placement="bottom"
           title={`The tick is where today should be by now (${money(goal * elapsed)}), if sales came evenly through the day.`}>
-          <div><Gauge value={today} goal={goal} expected={elapsed} color={color} css={css} /></div>
+          <div><Gauge value={today} goal={goal} expected={elapsed} color={color} /></div>
         </Tooltip>}
         <div className={css.note}>{todayNote()}</div>
       </div>
