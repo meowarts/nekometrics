@@ -10,7 +10,13 @@ const Earnings = (props) => {
 	const { widget, data, daily, kind } = props;
 
 	if (widget.settings?.chart?.type === 'today') {
-		return <TodayDisplay widget={widget} data={daily} color={widget.settings.color || '#FF6384'} />;
+		return (
+			<div className={css.container}>
+				<TodayDisplay widget={widget} data={daily} color={widget.settings.color || '#FF6384'} />
+				<StandardChart widget={widget} kind={kind} data={data} yAxisLabelFormatter='Income: $%d'
+					headerExtra={TodayDisplay.EXTRA_HEIGHT} />
+			</div>
+		);
 	}
 
 	return (

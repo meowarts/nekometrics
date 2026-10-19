@@ -66,7 +66,7 @@ const StandardChart = (props) => {
   const css = useStyles();
   const theme = useTheme();
 
-  const { widget, data, kind = 'flow', by, yAxisLabelFormatter = 'Value: %d' } = props;
+  const { widget, data, kind = 'flow', by, yAxisLabelFormatter = 'Value: %d', headerExtra = 0 } = props;
   const goal = goalForChart(widget.target, kind, by || widget.settings?.period?.groupBy || 'day');
 
   if (!(widget.h >= 2 && widget.w >= 2))
@@ -76,7 +76,9 @@ const StandardChart = (props) => {
   let fillType = colorSet ? `url(#${colorSet.name}` : 'url(#pink)';
 
   // Without an explicit choice the shape of the series decides, see defaultChartType.
-  let chartSettings = widget.settings?.chart ? widget.settings.chart
+  // A type that is not a chart shape (the Yesterday & Today view) keeps the default.
+  const chosen = widget.settings?.chart?.type;
+  let chartSettings = DynamicCharts.some(x => x.name === chosen) ? widget.settings.chart
     : { type: defaultChartType(kind) };
   // The period in progress is dropped from a flow, where a part-week bar next
   // to whole ones reads as a collapse. A level has no such problem: today's
@@ -87,6 +89,7 @@ const StandardChart = (props) => {
     workData.pop();
   }
   let { chartWidth, chartHeight } = calculateChartSizes(widget);
+  chartHeight = Math.max(chartHeight - headerExtra, 0);
   let showDots = false;
 
   const DynamicChart = DynamicCharts.find(x => x.name === chartSettings.type).component;
@@ -158,7 +161,8 @@ StandardChart.propTypes = {
   data: PropTypes.array,
   kind: PropTypes.string,
   by: PropTypes.string,
-  yAxisLabelFormatter: PropTypes.any
+  yAxisLabelFormatter: PropTypes.any,
+  headerExtra: PropTypes.number
 };
 
 export { goalForChart };

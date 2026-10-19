@@ -107,11 +107,11 @@ const TodayDisplay = ({ widget, data, color }) => {
 
 const useStyles = makeStyles(theme => ({
   container: {
-    flex: 1,
+    alignSelf: 'stretch',
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'space-around',
     gap: 20,
+    marginBottom: 6,
     color: '#FCFCFC',
     fontFamily: theme.fonts.FAMILY.ROBOTO,
     fontVariantNumeric: 'tabular-nums'
@@ -129,20 +129,20 @@ const useStyles = makeStyles(theme => ({
     opacity: 0.5
   },
   value: {
-    fontSize: theme.fonts.SIZE[32],
+    fontSize: 26,
     fontWeight: 500,
-    lineHeight: 1.2,
-    marginBottom: 6
+    lineHeight: 1.15,
+    marginBottom: 4
   },
   gauge: {
     position: 'relative',
-    height: 8,
-    borderRadius: 4,
+    height: 6,
+    borderRadius: 3,
     background: '#ffffff1f'
   },
   fill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
     transition: 'width 0.6s ease'
   },
   tick: {
@@ -155,12 +155,15 @@ const useStyles = makeStyles(theme => ({
     background: '#ffffffc0'
   },
   note: {
-    marginTop: 6,
+    marginTop: 4,
     fontSize: 11,
     opacity: 0.6,
     whiteSpace: 'nowrap'
   }
 }));
+
+// How much taller this is than the single number a chart normally sits under.
+TodayDisplay.EXTRA_HEIGHT = 30;
 
 TodayDisplay.propTypes = {
   widget: PropTypes.object,
