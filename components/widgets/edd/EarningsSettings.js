@@ -79,7 +79,7 @@ function EarningsSettings(props) {
 
         <ChartExpansionPanel expanded={expanded === 'chartPanel'} 
           onExpandPanel={(ev, open) => expandPanel(open ? 'chartPanel' : false)} 
-          chart={chart} onSetChart={setChart} />
+          chart={chart} onSetChart={setChart} withToday />
 
         <AdminAccordion widget={widget} expanded={expanded === 'adminPanel'} 
           onExpandPanel={(_ev, open) => expandPanel(open ? 'adminPanel' : false)} />

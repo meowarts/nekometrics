@@ -184,7 +184,8 @@ const WidgetsFactory = (props) => {
       // gets it, and so the headline number and the chart always agree.
       const kind = widgetSpine.kind ? widgetSpine.kind : 'flow';
       const grouped = aggregateSeries(data, widget?.settings?.period?.groupBy, kind);
-      return (<DynamicWidget widget={widget} data={grouped} kind={kind} onRefreshMetrics={onRefreshMetrics} />);
+      // daily is the series before grouping, for views that read single days.
+      return (<DynamicWidget widget={widget} data={grouped} daily={data} kind={kind} onRefreshMetrics={onRefreshMetrics} />);
     }
     if (error) {
       return (<>

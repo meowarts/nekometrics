@@ -161,4 +161,5 @@ StandardChart.propTypes = {
   yAxisLabelFormatter: PropTypes.any
 };
 
+export { goalForChart };
 export default StandardChart;

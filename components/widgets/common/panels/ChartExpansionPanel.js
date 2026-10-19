@@ -14,11 +14,14 @@ const types = [
   { name: 'bar', title: 'Bar Chart' }
 ];
 
+const todayType = { name: 'today', title: 'Yesterday & Today' };
+
 const ChartExpansionPanel = (props) => {
 
   // Props
-  const { expanded, onExpandPanel, chart, onSetChart } = props;
-  const currentChartType = types.find(x => x.name === (chart?.type ? chart.type : 'area'));
+  const { expanded, onExpandPanel, chart, onSetChart, withToday } = props;
+  const options = withToday ? [ ...types, todayType ] : types;
+  const currentChartType = options.find(x => x.name === chart?.type) || types[0];
 
   // System
   const css = useStyles();
@@ -42,7 +45,7 @@ const ChartExpansionPanel = (props) => {
       <AccordionDetails>
         <FormControl>
           <Select value={currentChartType.name} onChange={onUpdateType}>
-            {types.map(x => (<MenuItem key={`chart-type-${x.name}`} value={x.name}>{x.title}</MenuItem>))}
+            {options.map(x => (<MenuItem key={`chart-type-${x.name}`} value={x.name}>{x.title}</MenuItem>))}
           </Select>
         </FormControl>
       </AccordionDetails>
@@ -55,7 +58,8 @@ ChartExpansionPanel.propTypes = {
   expanded: PropTypes.bool,
   onExpandPanel: PropTypes.func,
   chart: PropTypes.object,
-  onSetChart: PropTypes.func
+  onSetChart: PropTypes.func,
+  withToday: PropTypes.bool
 };
 
 export default ChartExpansionPanel;

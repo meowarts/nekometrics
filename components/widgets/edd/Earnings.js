@@ -3,10 +3,15 @@ import PropTypes from 'prop-types';
 
 import MetricDisplay from '../common/MetricDisplay';
 import StandardChart from '../common/StandardChart';
+import TodayDisplay from '../common/TodayDisplay';
 
 const Earnings = (props) => {
 	const css = useStyles();
-	const { widget, data, kind } = props;
+	const { widget, data, daily, kind } = props;
+
+	if (widget.settings?.chart?.type === 'today') {
+		return <TodayDisplay widget={widget} data={daily} color={widget.settings.color || '#FF6384'} />;
+	}
 
 	return (
 		<div className={css.container}>
@@ -29,6 +34,7 @@ const useStyles = makeStyles(theme => ({
 Earnings.propTypes = {
 	widget: PropTypes.object,
 	data: PropTypes.array,
+	daily: PropTypes.array,
 	kind: PropTypes.string
 };
 

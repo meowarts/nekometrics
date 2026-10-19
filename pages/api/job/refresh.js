@@ -7,7 +7,7 @@ const GetRefreshPool = new PQueue({ concurrency: 5 });
 import withMiddleware from '~/libs/middleware';
 import Services from '~/libs/services';
 import { FriendlyError } from '~/libs/services/errors';
-import { refreshMinutesFor, DEFAULT_REFRESH_MINUTES } from '~/libs/constants';
+import { refreshMinutesFor, SOONEST_REFRESH_MINUTES } from '~/libs/constants';
 
 const refreshWidgets = async (db, widgets) => {
   if (!widgets)
@@ -82,7 +82,7 @@ const Service = async (req, res) => {
   // say is just load, and enough of it gets the connections refused.
   const isProduction = process.env.NODE_ENV === 'production';
   const soonest = isProduction ?
-    DayJS().subtract(DEFAULT_REFRESH_MINUTES, 'minutes').toDate() : DayJS().subtract(5, 'seconds').toDate();
+    DayJS().subtract(SOONEST_REFRESH_MINUTES, 'minutes').toDate() : DayJS().subtract(5, 'seconds').toDate();
   const candidates = await db.collection('Widget').find({
     refreshDaily: true, 
     enabled: true,

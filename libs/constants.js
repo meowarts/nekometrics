@@ -76,10 +76,15 @@ const REFRESH_MINUTES = {
   [`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PLUGIN}`]: 720,
   [`${SERVICES.WORDPRESSORG}-${TYPES.WORDPRESSORG.PORTFOLIO}`]: 720,
   [`${SERVICES.WORDPRESS}-${TYPES.WORDPRESS.METRIC}`]: 180,
-  [`${SERVICES.TRAVELPAYOUTS}-${TYPES.TRAVELPAYOUTS.STATS}`]: 180
+  [`${SERVICES.TRAVELPAYOUTS}-${TYPES.TRAVELPAYOUTS.STATS}`]: 180,
+  // Its card can show today's running total, which is only worth looking at if fresh.
+  [`${SERVICES.EDD}-${TYPES.EDD.EARNINGS}`]: 15
 };
 
 const DEFAULT_REFRESH_MINUTES = 60;
+
+// The refresh job's query has to reach the most eager widget.
+const SOONEST_REFRESH_MINUTES = Math.min(DEFAULT_REFRESH_MINUTES, ...Object.values(REFRESH_MINUTES));
 
 const refreshMinutesFor = (widget) => {
   const key = `${widget.service}-${widget.type}`;
@@ -91,4 +96,4 @@ const NO_FORCE_REFRESH_WIDGETS = [
 ];
 
 export { TYPES, SERVICES, DAILY_REFRESH_WIDGETS, NO_FORCE_REFRESH_WIDGETS,
-  REFRESH_MINUTES, DEFAULT_REFRESH_MINUTES, refreshMinutesFor }
+  REFRESH_MINUTES, DEFAULT_REFRESH_MINUTES, SOONEST_REFRESH_MINUTES, refreshMinutesFor }
