@@ -1,7 +1,7 @@
 const ObjectID = require('mongodb').ObjectID;
 
 import withMiddleware from '~/libs/middleware';
-import Services from '~/libs/services';
+import Services, { publicService } from '~/libs/services';
 import { FriendlyError, ServiceNotAuthorizedError, ServiceDisconnectedError } from '~/libs/services/errors';
 
 const isOkay = (req, res, service) => {
@@ -32,52 +32,52 @@ const Service = async (req, res) => {
     if (req.method === 'GET' && service.service === 'google') {
       const svc = new Services(db);
       const newService = await svc.googleService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'facebook') {
       const svc = new Services(db);
       const newService = await svc.facebookService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'mailchimp') {
       const svc = new Services(db);
       const newService = await svc.mailchimpService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'twitter') {
       const svc = new Services(db);
       const newService = await svc.twitterService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'woocommerce') {
       const svc = new Services(db);
       const newService = await svc.wooCommerceService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'edd') {
       const svc = new Services(db);
       const newService = await svc.eddService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'wordpress') {
       const svc = new Services(db);
       const newService = await svc.wordPressService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'wordpressorg') {
       const svc = new Services(db);
       const newService = await svc.wordPressOrgService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'plausible') {
       const svc = new Services(db);
       const newService = await svc.plausibleService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'GET' && service.service === 'travelpayouts') {
       const svc = new Services(db);
       const newService = await svc.travelPayoutsService.refreshService(service);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     else if (req.method === 'DELETE') {
       await db.collection('Service').deleteOne({ '_id': ObjectID(serviceId) });

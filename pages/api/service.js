@@ -1,5 +1,5 @@
 import withMiddleware from '~/libs/middleware';
-import Services from '~/libs/services';
+import Services, { publicService } from '~/libs/services';
 import { FriendlyError } from '~/libs/services/errors';
 
 const isOkay = (req, res) => {
@@ -21,7 +21,7 @@ const Service = async (req, res) => {
     if (req.method === 'POST') {
       const svc = new Services(db);
       const newService = await svc.createNew(service, req.user, req.json);
-      return res.status(200).json({ success: true, service: newService });
+      return res.status(200).json({ success: true, service: publicService(newService) });
     }
     return res.status(404).json({ success: true, message: 'This method is not supported.' });
   }

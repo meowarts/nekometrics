@@ -216,4 +216,19 @@ class Services {
 
 }
 
+// Credentials never leave the server. The dashboard only needs a service's
+// name and what it can pick from (accounts, lists, sites), and it talks back
+// by id, so nothing on the client misses them.
+const SECRET_FIELDS = [ 'token', 'key', 'secret', 'access_token', 'refresh_token', 'oauth_token', 'oauth_token_secret' ];
+
+const publicService = (service) => {
+  if (!service?.data) {
+    return service;
+  }
+  const data = { ...service.data };
+  SECRET_FIELDS.forEach(field => delete data[field]);
+  return { ...service, data };
+};
+
+export { publicService };
 export default Services;

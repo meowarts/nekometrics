@@ -1,5 +1,5 @@
 import withMiddleware from '~/libs/middleware';
-import Services from '~/libs/services';
+import Services, { publicService } from '~/libs/services';
 import { FriendlyError } from '~/libs/services/errors';
 
 const HandleOauth = async (req, res) => {
@@ -11,7 +11,7 @@ const HandleOauth = async (req, res) => {
     const svc = new Services(req.db);
     const service = await svc.handleOauth(req.json.service, req.user, req.json);
     if (service) {
-      return res.status(200).json({ success: true, service });
+      return res.status(200).json({ success: true, service: publicService(service) });
     }
   }
   catch (err) {

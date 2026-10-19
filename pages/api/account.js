@@ -1,6 +1,7 @@
 const ObjectID = require('mongodb').ObjectID;
 
 import withMiddleware from '~/libs/middleware';
+import { publicService } from '~/libs/services';
 import { getUserOnAccess, getWidgets, resetCacheForUser } from '~/libs/helpers-srv';
 
 const getServiceLinks = async () => {
@@ -67,7 +68,7 @@ const getAccount = async (db, user) => {
   const services = await db.collection('Service').find({ userId: ObjectID(user._id) }).toArray();
   const serviceLinks = await getServiceLinks();
   const dashboards = await getDashboards(db, user);
-  return { dashboards, services, serviceLinks, settings };
+  return { dashboards, services: services.map(publicService), serviceLinks, settings };
 }
 
 const Account = async (req, res) => {
