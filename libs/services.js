@@ -33,6 +33,7 @@ class Services {
   metricRepo = {};
   resetRepo = {};
   refreshRepo = {};
+  liveRepo = {};
   oauthRepo = {};
 
 	constructor(db) {
@@ -79,6 +80,7 @@ class Services {
     this.metricRepo[`${SERVICES.EDD}-${TYPES.EDD.EARNINGS}`] = this.eddService.getEarnings;
     this.refreshRepo[`${SERVICES.EDD}-${TYPES.EDD.EARNINGS}`] = this.eddService.refreshEarnings;
     this.resetRepo[`${SERVICES.EDD}-${TYPES.EDD.EARNINGS}`] = this.eddService.resetEarnings;
+    this.liveRepo[`${SERVICES.EDD}-${TYPES.EDD.EARNINGS}`] = this.eddService.getLive;
 
     // WooCommerce    
     this.wooCommerceService = new WooCommerceService(this.db);
@@ -178,6 +180,12 @@ class Services {
 
   getMetrics = async (widget) => {
     return this.runServiceFunc(widget, this.metricRepo);
+  }
+
+  // What a widget shows beside its series, for the few that have any.
+  getLive = async (widget) => {
+    const func = this.liveRepo[`${widget.service}-${widget.type}`];
+    return (func && widget.settings) ? func(widget.settings) : null;
   }
 
   refresh = async (widget) => {

@@ -35,9 +35,10 @@ const Metrics = async (req, res) => {
         await svc.refresh(widget);
       }
       const data = await svc.getMetrics(widget);
+      const live = await svc.getLive(widget);
       // TODO: I don't really like this request only to get the RefreshedOn, maybe there is a better idea.
       const refreshedWidget = await req.db.collection('Widget').findOne({ _id: ObjectID(widgetId) });
-      return res.status(200).json({ success: true, data, refreshedOn: refreshedWidget.refreshedOn });
+      return res.status(200).json({ success: true, data, live, refreshedOn: refreshedWidget.refreshedOn });
     }
     catch (err) {
       if (err instanceof FriendlyError) {

@@ -14,6 +14,10 @@ const roundValue = (num) => {
 const CURVE_DAYS = 28;
 const CURVE_MAX_PAGES = 30;
 const CURVE_MAX_AGE_HOURS = 20;
+const RECENT_DAYS = 3;
+const RECENT_MAX_PAGES = 5;
+
+const dayOfSale = (sale) => String(sale.date).slice(0, 10);
 
 // For each hour of the store's day, the share of a day's earnings usually made
 // by the end of it. EDD dates sales in the store's own timezone, so the hours
@@ -22,7 +26,7 @@ const dayCurveOf = (sales, firstDay, lastDay) => {
 	const perHour = new Array(24).fill(0);
 	let count = 0;
 	for (const sale of sales) {
-		const day = String(sale.date).slice(0, 10);
+		const day = dayOfSale(sale);
 		const total = Number(sale.total) || 0;
 		if (day < firstDay || day > lastDay || total <= 0) {
 			continue;
@@ -129,26 +133,20 @@ class EDDService {
 				await this.db.collection('Metric').updateOne({ '_id': ObjectID(dbMetric._id) }, { $set: {  'value': value, 'updatedOn': now }});
 			}
 		}
-		// A bonus for the Yesterday & Today view, so it never fails the refresh.
+		// Bonuses for the Yesterday & Today view, so they never fail the refresh.
 		try {
+			await this.refreshRecentDays(service);
 			await this.refreshDayCurve(service);
 		}
 		catch (err) {
-			console.error('[EDD] Could not read the day curve.', err.message);
+			console.error('[EDD] Could not read the recent sales.', err.message);
 		}
 	}
 
-	// Read once a day from the sales of the last four weeks, newest first, and
-	// kept on the service so the dashboard gets it with the account.
-	refreshDayCurve = async (service) => {
-		const updatedOn = service.dayCurve?.updatedOn;
-		if (updatedOn && DayJS().diff(updatedOn, 'hour') < CURVE_MAX_AGE_HOURS) {
-			return;
-		}
+	// Sales come newest first, so paging stops once a page reaches back past firstDay.
+	fetchSalesSince = async (service, firstDay, maxPages) => {
 		const sales = [];
-		let newestDay = null;
-		let firstDay = null;
-		for (let page = 1; page <= CURVE_MAX_PAGES; page++) {
+		for (let page = 1; page <= maxPages; page++) {
 			const data = await fetchIt(service.data.endpoint + '/sales', { method: 'GET' }, {
 				token: service.data.token,
 				key: service.data.key,
@@ -156,28 +154,62 @@ class EDDService {
 				page
 			});
 			const batch = Array.isArray(data?.sales) ? data.sales : [];
-			if (!batch.length) {
-				break;
-			}
 			sales.push(...batch);
-			// The newest day is still running, so the curve stops the day before it.
-			if (!newestDay) {
-				newestDay = String(batch[0].date).slice(0, 10);
-				firstDay = DayJS(newestDay).subtract(CURVE_DAYS, 'day').format('YYYY-MM-DD');
-			}
-			if (String(batch[batch.length - 1].date).slice(0, 10) < firstDay) {
+			if (!batch.length || dayOfSale(batch[batch.length - 1]) < firstDay) {
 				break;
 			}
 		}
-		if (!newestDay) {
+		return sales;
+	}
+
+	// The stats endpoint cuts its days in UTC, so for a store in Japan "today"
+	// started at 9am. The sales carry the store's own time, so the last few days
+	// are summed from them instead, as the store's dashboard does.
+	refreshRecentDays = async (service) => {
+		const firstDay = DayJS().subtract(RECENT_DAYS, 'day').format('YYYY-MM-DD');
+		const sales = await this.fetchSalesSince(service, firstDay, RECENT_MAX_PAGES);
+		const days = {};
+		for (const sale of sales) {
+			const day = dayOfSale(sale);
+			const total = Number(sale.total) || 0;
+			if (day >= firstDay && total > 0) {
+				days[day] = roundValue((days[day] || 0) + total);
+			}
+		}
+		const recentDays = { days, updatedOn: new Date() };
+		service.recentDays = recentDays;
+		await this.db.collection('Service').updateOne({ _id: ObjectID(service._id) }, { $set: { recentDays } });
+	}
+
+	// Read once a day from the sales of the last four weeks.
+	refreshDayCurve = async (service) => {
+		const updatedOn = service.dayCurve?.updatedOn;
+		if (updatedOn && DayJS().diff(updatedOn, 'hour') < CURVE_MAX_AGE_HOURS) {
 			return;
 		}
-		const lastDay = DayJS(newestDay).subtract(1, 'day').format('YYYY-MM-DD');
-		const dayCurve = dayCurveOf(sales, firstDay, lastDay);
+		const sales = await this.fetchSalesSince(service,
+			DayJS().subtract(CURVE_DAYS + 1, 'day').format('YYYY-MM-DD'), CURVE_MAX_PAGES);
+		if (!sales.length) {
+			return;
+		}
+		// The newest day is still running, so the curve stops the day before it.
+		const lastDay = DayJS(dayOfSale(sales[0])).subtract(1, 'day');
+		const firstDay = lastDay.subtract(CURVE_DAYS - 1, 'day');
+		const dayCurve = dayCurveOf(sales, firstDay.format('YYYY-MM-DD'), lastDay.format('YYYY-MM-DD'));
 		if (dayCurve) {
 			await this.db.collection('Service').updateOne({ _id: ObjectID(service._id) }, { $set: { dayCurve } });
 			console.log(`[EDD] Day curve read from ${dayCurve.sales} sales for ${service.data.username}.`);
 		}
+	}
+
+	getLive = async (params) => {
+		const { serviceId } = params;
+		if (!serviceId) {
+			return null;
+		}
+		const service = await this.db.collection('Service').findOne({ _id: ObjectID(serviceId) },
+			{ projection: { recentDays: 1, dayCurve: 1 } });
+		return service ? { days: service.recentDays?.days || null, shares: service.dayCurve?.shares || null } : null;
 	}
 
 	getEarnings = async (params) => {

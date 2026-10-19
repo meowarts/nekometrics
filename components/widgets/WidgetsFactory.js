@@ -68,6 +68,7 @@ const WidgetsFactory = (props) => {
   const css = useStyles();
   const { widget, updateSpeed = 'normal' } = props;
   const [ data, setData ] = useState();
+  const [ live, setLive ] = useState(null);
   const [ settingsModal, setSettingsModal ] = useState();
   const [ targetModal, setTargetModal ] = useState(false);
   const [ refreshInterval, setRefreshInterval ] = useState(getRandomInterval(updateSpeed));
@@ -131,7 +132,8 @@ const WidgetsFactory = (props) => {
     // For standard widget
     const res = await getMetrics(widget._id);
     if (res.success) {
-      const { data, refreshedOn } = res;
+      const { data, live, refreshedOn } = res;
+      setLive(live || null);
       setLastUpdate(widget.refreshDaily ? (refreshedOn ? DayJS(refreshedOn) : null) : null);
       setLastRefresh(DayJS());
       setData(data ? data : []);
@@ -185,7 +187,7 @@ const WidgetsFactory = (props) => {
       const kind = widgetSpine.kind ? widgetSpine.kind : 'flow';
       const grouped = aggregateSeries(data, widget?.settings?.period?.groupBy, kind);
       // daily is the series before grouping, for views that read single days.
-      return (<DynamicWidget widget={widget} data={grouped} daily={data} kind={kind} onRefreshMetrics={onRefreshMetrics} />);
+      return (<DynamicWidget widget={widget} data={grouped} daily={data} live={live} kind={kind} onRefreshMetrics={onRefreshMetrics} />);
     }
     if (error) {
       return (<>
@@ -193,7 +195,7 @@ const WidgetsFactory = (props) => {
       <NekoButton primary small onClick={() => setSettingsModal(true)}>Settings</NekoButton>
     </>);
     }
-  }, [widget, data, error, widgetSpine]);
+  }, [widget, data, live, error, widgetSpine]);
 
   // TODO: This should be moved to the context, probably.
   const onForceRefresh = async () => {

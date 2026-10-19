@@ -4,18 +4,15 @@ import PropTypes from 'prop-types';
 import MetricDisplay from '../common/MetricDisplay';
 import StandardChart from '../common/StandardChart';
 import TodayDisplay from '../common/TodayDisplay';
-import useGlobalState from '~/libs/context';
 
 const Earnings = (props) => {
 	const css = useStyles();
-	const { widget, data, daily, kind } = props;
-	const { services } = useGlobalState();
+	const { widget, data, daily, live, kind } = props;
 
 	if (widget.settings?.chart?.type === 'today') {
 		return (
 			<div className={css.container}>
-				<TodayDisplay widget={widget} data={daily} color={widget.settings.color || '#FF6384'}
-					curve={services.find(x => x._id === widget.settings.serviceId)?.dayCurve} />
+				<TodayDisplay widget={widget} data={daily} live={live} color={widget.settings.color || '#FF6384'} />
 				<StandardChart widget={widget} kind={kind} data={data} yAxisLabelFormatter='Income: $%d'
 					headerExtra={TodayDisplay.EXTRA_HEIGHT} />
 			</div>
@@ -44,6 +41,7 @@ Earnings.propTypes = {
 	widget: PropTypes.object,
 	data: PropTypes.array,
 	daily: PropTypes.array,
+	live: PropTypes.object,
 	kind: PropTypes.string
 };
 

@@ -59,10 +59,12 @@ const shareByNow = (shares, now) => {
  * this hour, from the store's own sales, or every quiet morning would read as
  * behind. Without that curve, the tick falls back to an even pace towards the goal.
  *
- * "Now" is the browser's clock while the curve is in the store's hours, so the
- * tick drifts if the two timezones are far apart.
+ * Yesterday and today come from the store's own sales when the service sends
+ * them (live.days, in the store's timezone), since the daily series is cut in
+ * UTC. "Now" is the browser's clock while those days and the curve are in the
+ * store's hours, so things drift if the two timezones are far apart.
  */
-const TodayDisplay = ({ widget, data, color, curve }) => {
+const TodayDisplay = ({ widget, data, color, live }) => {
   const css = useStyles();
   const goal = goalForChart(widget.target, 'flow', 'day');
 
@@ -73,15 +75,16 @@ const TodayDisplay = ({ widget, data, color, curve }) => {
     const finished = [ ...byDay.entries() ]
       .filter(([ day ]) => day < todayKey).slice(-USUAL_DAYS).map(([ , value ]) => value);
     const usualDay = finished.length ? finished.reduce((a, b) => a + b, 0) / finished.length : 0;
-    const usual = curve?.shares?.length === 24 && usualDay > 0;
+    const usual = live?.shares?.length === 24 && usualDay > 0;
+    const days = live?.days || Object.fromEntries(byDay);
     return {
-      today: byDay.get(todayKey) || 0,
-      yesterday: byDay.get(now.subtract(1, 'day').format('YYYY-MM-DD')) || 0,
+      today: days[todayKey] || 0,
+      yesterday: days[now.subtract(1, 'day').format('YYYY-MM-DD')] || 0,
       byNow: usual
-        ? { value: usualDay * shareByNow(curve.shares, now), usual: true }
+        ? { value: usualDay * shareByNow(live.shares, now), usual: true }
         : { value: goal ? goal * now.diff(now.startOf('day')) / 86400000 : 0, usual: false }
     };
-  }, [data, curve, goal]);
+  }, [data, live, goal]);
 
   const todayNote = () => {
     if (!goal) {
@@ -189,7 +192,7 @@ TodayDisplay.propTypes = {
   widget: PropTypes.object,
   data: PropTypes.array,
   color: PropTypes.string,
-  curve: PropTypes.object
+  live: PropTypes.object
 };
 
 export default TodayDisplay;
