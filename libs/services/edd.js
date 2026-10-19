@@ -11,6 +11,38 @@ const roundValue = (num) => {
 	return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 
+const CURVE_DAYS = 28;
+const CURVE_MAX_PAGES = 30;
+const CURVE_MAX_AGE_HOURS = 20;
+
+// For each hour of the store's day, the share of a day's earnings usually made
+// by the end of it. EDD dates sales in the store's own timezone, so the hours
+// are the store's.
+const dayCurveOf = (sales, firstDay, lastDay) => {
+	const perHour = new Array(24).fill(0);
+	let count = 0;
+	for (const sale of sales) {
+		const day = String(sale.date).slice(0, 10);
+		const total = Number(sale.total) || 0;
+		if (day < firstDay || day > lastDay || total <= 0) {
+			continue;
+		}
+		const hour = DayJS(sale.date).hour();
+		if (isNaN(hour)) {
+			continue;
+		}
+		perHour[hour] += total;
+		count++;
+	}
+	const sum = perHour.reduce((a, b) => a + b, 0);
+	if (!sum) {
+		return null;
+	}
+	let running = 0;
+	const shares = perHour.map(x => Math.round((running += x) / sum * 1000) / 1000);
+	return { shares, sales: count, updatedOn: new Date() };
+};
+
 class EDDService {
 
 	db = null;
@@ -96,6 +128,55 @@ class EDDService {
 				console.log('[EDD] Update', date.format('YYYYMMDD'), dbMetric.value, '->', value);
 				await this.db.collection('Metric').updateOne({ '_id': ObjectID(dbMetric._id) }, { $set: {  'value': value, 'updatedOn': now }});
 			}
+		}
+		// A bonus for the Yesterday & Today view, so it never fails the refresh.
+		try {
+			await this.refreshDayCurve(service);
+		}
+		catch (err) {
+			console.error('[EDD] Could not read the day curve.', err.message);
+		}
+	}
+
+	// Read once a day from the sales of the last four weeks, newest first, and
+	// kept on the service so the dashboard gets it with the account.
+	refreshDayCurve = async (service) => {
+		const updatedOn = service.dayCurve?.updatedOn;
+		if (updatedOn && DayJS().diff(updatedOn, 'hour') < CURVE_MAX_AGE_HOURS) {
+			return;
+		}
+		const sales = [];
+		let newestDay = null;
+		let firstDay = null;
+		for (let page = 1; page <= CURVE_MAX_PAGES; page++) {
+			const data = await fetchIt(service.data.endpoint + '/sales', { method: 'GET' }, {
+				token: service.data.token,
+				key: service.data.key,
+				number: 100,
+				page
+			});
+			const batch = Array.isArray(data?.sales) ? data.sales : [];
+			if (!batch.length) {
+				break;
+			}
+			sales.push(...batch);
+			// The newest day is still running, so the curve stops the day before it.
+			if (!newestDay) {
+				newestDay = String(batch[0].date).slice(0, 10);
+				firstDay = DayJS(newestDay).subtract(CURVE_DAYS, 'day').format('YYYY-MM-DD');
+			}
+			if (String(batch[batch.length - 1].date).slice(0, 10) < firstDay) {
+				break;
+			}
+		}
+		if (!newestDay) {
+			return;
+		}
+		const lastDay = DayJS(newestDay).subtract(1, 'day').format('YYYY-MM-DD');
+		const dayCurve = dayCurveOf(sales, firstDay, lastDay);
+		if (dayCurve) {
+			await this.db.collection('Service').updateOne({ _id: ObjectID(service._id) }, { $set: { dayCurve } });
+			console.log(`[EDD] Day curve read from ${dayCurve.sales} sales for ${service.data.username}.`);
 		}
 	}
 

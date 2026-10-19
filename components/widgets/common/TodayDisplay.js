@@ -44,27 +44,44 @@ Gauge.propTypes = {
   color: PropTypes.string
 };
 
+const USUAL_DAYS = 28;
+
+// The share of a day's earnings usually made by now, read between the hours.
+const shareByNow = (shares, now) => {
+  const hour = now.hour();
+  const before = hour > 0 ? shares[hour - 1] : 0;
+  return before + (shares[hour] - before) * now.minute() / 60;
+};
+
 /**
  * Yesterday's total next to today's running one, each against the daily share
- * of the monthly target. Today also carries a tick for where it should be by
- * now, or every morning would read as behind.
+ * of the monthly target. Today also carries a tick for what is usually made by
+ * this hour, from the store's own sales, or every quiet morning would read as
+ * behind. Without that curve, the tick falls back to an even pace towards the goal.
  *
- * "Now" is the browser's clock. The store splits days in its own WordPress
- * timezone, so the tick drifts if the two are far apart.
+ * "Now" is the browser's clock while the curve is in the store's hours, so the
+ * tick drifts if the two timezones are far apart.
  */
-const TodayDisplay = ({ widget, data, color }) => {
+const TodayDisplay = ({ widget, data, color, curve }) => {
   const css = useStyles();
   const goal = goalForChart(widget.target, 'flow', 'day');
 
-  const { today, yesterday, elapsed } = useMemo(() => {
+  const { today, yesterday, byNow } = useMemo(() => {
     const byDay = new Map((data || []).map(x => [ dayOf(x.date), x.value ]));
     const now = DayJS();
+    const todayKey = now.format('YYYY-MM-DD');
+    const finished = [ ...byDay.entries() ]
+      .filter(([ day ]) => day < todayKey).slice(-USUAL_DAYS).map(([ , value ]) => value);
+    const usualDay = finished.length ? finished.reduce((a, b) => a + b, 0) / finished.length : 0;
+    const usual = curve?.shares?.length === 24 && usualDay > 0;
     return {
-      today: byDay.get(now.format('YYYY-MM-DD')) || 0,
+      today: byDay.get(todayKey) || 0,
       yesterday: byDay.get(now.subtract(1, 'day').format('YYYY-MM-DD')) || 0,
-      elapsed: now.diff(now.startOf('day')) / 86400000
+      byNow: usual
+        ? { value: usualDay * shareByNow(curve.shares, now), usual: true }
+        : { value: goal ? goal * now.diff(now.startOf('day')) / 86400000 : 0, usual: false }
     };
-  }, [data]);
+  }, [data, curve, goal]);
 
   const todayNote = () => {
     if (!goal) {
@@ -73,9 +90,13 @@ const TodayDisplay = ({ widget, data, color }) => {
     if (today >= goal) {
       return `Goal of ${shortMoney(goal)} hit`;
     }
-    const ahead = today >= goal * elapsed;
+    const ahead = today >= byNow.value;
     return `${Math.round(today / goal * 100)}% of ${shortMoney(goal)}, ${ahead ? 'ahead' : 'behind'}`;
   };
+
+  const tickHelp = byNow.usual
+    ? `The tick is what you usually have by this time: ${money(byNow.value)}, from the last four weeks.`
+    : `The tick is where today should be by now (${money(byNow.value)}), if sales came evenly through the day.`;
 
   const yesterdayNote = () => {
     if (!goal) {
@@ -95,9 +116,8 @@ const TodayDisplay = ({ widget, data, color }) => {
       <div className={css.column}>
         <div className={css.label}>Today</div>
         <div className={css.value}><Amount value={today} /></div>
-        {goal && <Tooltip TransitionComponent={Zoom} placement="bottom"
-          title={`The tick is where today should be by now (${money(goal * elapsed)}), if sales came evenly through the day.`}>
-          <div><Gauge value={today} goal={goal} expected={elapsed} color={color} /></div>
+        {goal && <Tooltip TransitionComponent={Zoom} placement="bottom" title={tickHelp}>
+          <div><Gauge value={today} goal={goal} expected={Math.min(byNow.value / goal, 1)} color={color} /></div>
         </Tooltip>}
         <div className={css.note}>{todayNote()}</div>
       </div>
@@ -168,7 +188,8 @@ TodayDisplay.EXTRA_HEIGHT = 30;
 TodayDisplay.propTypes = {
   widget: PropTypes.object,
   data: PropTypes.array,
-  color: PropTypes.string
+  color: PropTypes.string,
+  curve: PropTypes.object
 };
 
 export default TodayDisplay;
