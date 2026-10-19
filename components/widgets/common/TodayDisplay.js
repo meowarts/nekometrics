@@ -117,7 +117,10 @@ const TodayDisplay = ({ widget, data, color, live }) => {
         <div className={css.note}>{yesterdayNote()}</div>
       </div>
       <div className={css.column}>
-        <div className={css.label}>Today</div>
+        {/* So a stale number can be told apart from a slow day. */}
+        <div className={css.label}>
+          Today{live?.updatedOn && <span className={css.updated}> · {DayJS(live.updatedOn).format('HH:mm')}</span>}
+        </div>
         <div className={css.value}><Amount value={today} /></div>
         {goal && <Tooltip TransitionComponent={Zoom} placement="bottom" title={tickHelp}>
           <div><Gauge value={today} goal={goal} expected={Math.min(byNow.value / goal, 1)} color={color} /></div>
@@ -150,6 +153,10 @@ const useStyles = makeStyles(theme => ({
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     opacity: 0.5
+  },
+  updated: {
+    fontWeight: 400,
+    letterSpacing: 0
   },
   value: {
     fontSize: 26,

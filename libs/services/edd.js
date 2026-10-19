@@ -19,6 +19,17 @@ const RECENT_MAX_PAGES = 5;
 
 const dayOfSale = (sale) => String(sale.date).slice(0, 10);
 
+// EDD's /sales sends no status and still returns orders held for a dispute.
+// A store can add one through the edd_api_sales filter, and then only revenue
+// it keeps is counted. Without it, every sale counts as before.
+const KEPT_STATUSES = [ 'complete', 'edd_subscription' ];
+const amountOfSale = (sale) => {
+	if (sale.status && !KEPT_STATUSES.includes(sale.status)) {
+		return 0;
+	}
+	return Number(sale.total) || 0;
+};
+
 // For each hour of the store's day, the share of a day's earnings usually made
 // by the end of it. EDD dates sales in the store's own timezone, so the hours
 // are the store's.
@@ -27,7 +38,7 @@ const dayCurveOf = (sales, firstDay, lastDay) => {
 	let count = 0;
 	for (const sale of sales) {
 		const day = dayOfSale(sale);
-		const total = Number(sale.total) || 0;
+		const total = amountOfSale(sale);
 		if (day < firstDay || day > lastDay || total <= 0) {
 			continue;
 		}
@@ -171,7 +182,7 @@ class EDDService {
 		const days = {};
 		for (const sale of sales) {
 			const day = dayOfSale(sale);
-			const total = Number(sale.total) || 0;
+			const total = amountOfSale(sale);
 			if (day >= firstDay && total > 0) {
 				days[day] = roundValue((days[day] || 0) + total);
 			}
@@ -209,7 +220,11 @@ class EDDService {
 		}
 		const service = await this.db.collection('Service').findOne({ _id: ObjectID(serviceId) },
 			{ projection: { recentDays: 1, dayCurve: 1 } });
-		return service ? { days: service.recentDays?.days || null, shares: service.dayCurve?.shares || null } : null;
+		return service ? {
+			days: service.recentDays?.days || null,
+			updatedOn: service.recentDays?.updatedOn || null,
+			shares: service.dayCurve?.shares || null
+		} : null;
 	}
 
 	getEarnings = async (params) => {
