@@ -194,7 +194,8 @@ const NekoToolTip = ({ active, payload, label, yAxisLabel = 'Value: %d' }) => {
 
 	if (active) {
 		let formattedDate = DayJS(label, 'YYYYMMDD').format('YYYY/MM/DD');
-		let value = payload && payload[0] ? numberWithCommas(payload[0].value, true) : null;
+		// The row's own value, since a bar split at the goal holds it in two pieces.
+		let value = payload && payload[0] ? numberWithCommas(payload[0].payload?.value ?? payload[0].value, true) : null;
 		let formattedValue = typeof yAxisLabel === 'function' ? yAxisLabel(value) : yAxisLabel.replace('%d', value);
 		return (
 			<div className={css.nekoToolTip}>

@@ -95,6 +95,14 @@ const StandardChart = (props) => {
   const DynamicChart = DynamicCharts.find(x => x.name === chartSettings.type).component;
   const DynamicChartElement = DynamicChartElements.find(x => x.name === chartSettings.type).component;
   const strokeWidth = chartSettings.type === 'bar' ? 0 : 2;
+  // A bar that beats the goal is split there, with the part above it in the
+  // goal line's lighter shade, so good days stand out at a glance.
+  const splitAtGoal = goal && chartSettings.type === 'bar';
+  if (splitAtGoal) {
+    workData = workData.map(x => ({ ...x,
+      base: x.value > goal ? goal : x.value,
+      over: x.value > goal ? x.value - goal : 0 }));
+  }
 
   if (workData.length > 0) {
     return (
@@ -116,9 +124,14 @@ const StandardChart = (props) => {
           content={<NekoToolTip yAxisLabel={yAxisLabelFormatter} />}
         />
         <CartesianGrid />
-        <DynamicChartElement isAnimationActive={false} type="monotone" dataKey="value"
-          dot={showDots ? { stroke: color, fill: 'white', fillOpacity: 1, strokeWidth: 2, r: 4.2 } : null} 
-          stroke={color} fill={fillType} strokeWidth={strokeWidth} yAxisId={0}/>
+        {splitAtGoal ? [
+          <Bar key="base" isAnimationActive={false} dataKey="base" stackId="goal" fill={fillType} strokeWidth={0} />,
+          <Bar key="over" isAnimationActive={false} dataKey="over" stackId="goal" fill={lighten(color)} strokeWidth={0} />
+        ] : (
+          <DynamicChartElement isAnimationActive={false} type="monotone" dataKey="value"
+            dot={showDots ? { stroke: color, fill: 'white', fillOpacity: 1, strokeWidth: 2, r: 4.2 } : null}
+            stroke={color} fill={fillType} strokeWidth={strokeWidth} yAxisId={0}/>
+        )}
         {goal && <ReferenceLine y={goal} stroke={lighten(color)} strokeWidth={1.5}
           strokeDasharray="5 4" label={{ value: 'Goal', position: 'insideTopLeft', fill: lighten(color), fontSize: 10 }} />}
       </DynamicChart>
