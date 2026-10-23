@@ -13,7 +13,6 @@ const dayOf = (date) => DayJS(date).subtract(12, 'hour').format('YYYY-MM-DD');
 
 const money = (value) => `$${Math.round(value).toLocaleString('en-US')}`;
 
-const shortMoney = (value) => (value >= 1000 ? `$${(value / 1000).toFixed(1)}k` : money(value));
 
 // The first value is printed as is; only later changes count up, from the
 // number already on screen, so a sale landing during the day is visible.
@@ -86,34 +85,39 @@ const TodayDisplay = ({ widget, data, color, live }) => {
     };
   }, [data, live, goal]);
 
+  // Short on purpose: the gauge already shows how far, the goal itself is in the tooltip.
+  const percentOf = (value) => `${Math.round(value / goal * 100)}%`;
+
   const todayNote = () => {
     if (!goal) {
       return 'so far';
     }
     if (today >= goal) {
-      return `Goal of ${shortMoney(goal)} hit`;
+      return '✓ hit';
     }
-    const ahead = today >= byNow.value;
-    return `${Math.round(today / goal * 100)}% of ${shortMoney(goal)}, ${ahead ? 'ahead' : 'behind'}`;
+    return `${percentOf(today)} · ${today >= byNow.value ? 'ahead' : 'behind'}`;
   };
-
-  const tickHelp = byNow.usual
-    ? `The tick is what you usually have by this time: ${money(byNow.value)}, from the last four weeks.`
-    : `The tick is where today should be by now (${money(byNow.value)}), if sales came evenly through the day.`;
 
   const yesterdayNote = () => {
     if (!goal) {
       return 'full day';
     }
-    return yesterday >= goal ? `Goal of ${shortMoney(goal)} hit` : `${Math.round(yesterday / goal * 100)}% of ${shortMoney(goal)}`;
+    return yesterday >= goal ? '✓ hit' : percentOf(yesterday);
   };
+
+  const goalHelp = goal ? `Daily goal: ${money(goal)}, the monthly target spread over the month.` : '';
+  const tickHelp = byNow.usual
+    ? `The tick is what you usually have by this time: ${money(byNow.value)}, from the last four weeks.`
+    : `The tick is where today should be by now (${money(byNow.value)}), if sales came evenly through the day.`;
 
   return (
     <div className={css.container}>
       <div className={css.column}>
         <div className={css.label}>Yesterday</div>
         <div className={css.value}><Amount value={yesterday} /></div>
-        {goal && <Gauge value={yesterday} goal={goal} color={color} />}
+        {goal && <Tooltip TransitionComponent={Zoom} placement="bottom" title={goalHelp}>
+          <div><Gauge value={yesterday} goal={goal} color={color} /></div>
+        </Tooltip>}
         <div className={css.note}>{yesterdayNote()}</div>
       </div>
       <div className={css.column}>
@@ -122,7 +126,8 @@ const TodayDisplay = ({ widget, data, color, live }) => {
           Today{live?.updatedOn && <span className={css.updated}> · {DayJS(live.updatedOn).format('HH:mm')}</span>}
         </div>
         <div className={css.value}><Amount value={today} /></div>
-        {goal && <Tooltip TransitionComponent={Zoom} placement="bottom" title={tickHelp}>
+        {goal && <Tooltip TransitionComponent={Zoom} placement="bottom"
+          title={<>{goalHelp}<br />{tickHelp}</>}>
           <div><Gauge value={today} goal={goal} expected={Math.min(byNow.value / goal, 1)} color={color} /></div>
         </Tooltip>}
         <div className={css.note}>{todayNote()}</div>
