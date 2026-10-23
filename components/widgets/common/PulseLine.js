@@ -141,8 +141,6 @@ const TargetDialog = ({ widget, kind, onClose }) => {
   );
 };
 
-// The word comes first because it is what the eye should land on; the numbers
-// after it are the evidence.
 // The colour lives in the icon alone: a whole bar of red or green on every
 // card shouted louder than the numbers it was meant to frame.
 const verdictIcon = (pulse) => {
@@ -155,17 +153,29 @@ const verdictIcon = (pulse) => {
   return { good: TrendingUpIcon, steady: TrendingFlatIcon, bad: TrendingDownIcon }[pulse.verdict];
 };
 
-const verdictWord = (pulse) => {
+// One figure per card: fourteen sentences at once were too much to read. The
+// full sentence is still there on hover.
+const glance = (pulse, target, prefix) => {
   if (pulse.verdict === 'stale') {
-    return 'Not updating';
+    return `No data since ${DayJS(pulse.since).format('MMM D')}`;
   }
   if (pulse.pace) {
-    if (pulse.pace.reached) {
-      return 'Reached';
+    if (pulse.kind === 'flow') {
+      return `${compact(pulse.pace.projected, prefix)} / ${compact(target, prefix)}`;
     }
-    return { good: 'On pace', steady: 'Close', bad: 'Behind' }[pulse.verdict];
+    return pulse.pace.reached ? 'Reached' : `${compact(pulse.pace.remaining)} to go`;
   }
-  return { good: 'Up', steady: 'Steady', bad: 'Down' }[pulse.verdict];
+  if (pulse.kind === 'flow') {
+    if (pulse.change === null) {
+      return `was ${compact(pulse.previous, prefix)}`;
+    }
+    const percent = Math.round(pulse.change);
+    return `${percent > 0 ? '+' : ''}${percent === 0 ? 0 : percent}%`;
+  }
+  if (pulse.week !== null) {
+    return `${signed(pulse.week)} this week`;
+  }
+  return pulse.month !== null ? `${signed(pulse.month)} in 30 days` : 'Not enough history';
 };
 
 /**
@@ -183,9 +193,9 @@ const PulseLine = ({ widget, kind, pulse, editing, onEdit, onClose }) => {
     const prefix = currencyOf(widget);
     return {
       verdict: pulse.verdict,
-      word: verdictWord(pulse),
       Icon: verdictIcon(pulse),
-      text: describePace(pulse, widget.target, prefix) || describe(pulse, prefix)
+      text: glance(pulse, widget.target, prefix),
+      sentence: describePace(pulse, widget.target, prefix) || describe(pulse, prefix)
     };
   }, [pulse, widget]);
 
@@ -197,11 +207,11 @@ const PulseLine = ({ widget, kind, pulse, editing, onEdit, onClose }) => {
 
   return (
     <>
-      <Tooltip TransitionComponent={Zoom} placement="bottom" title={explain(kind, pulse)}>
+      <Tooltip TransitionComponent={Zoom} placement="bottom"
+        title={<>{line.sentence}<div className={css.explain}>{explain(kind, pulse)}</div></>}>
         <button type="button" className={css.bar} disabled={!canEdit}
           onMouseDown={(ev) => ev.stopPropagation()} onClick={onEdit}>
           <line.Icon className={`${css.icon} ${css[line.verdict]}`} />
-          <b className={css.word}>{line.word}</b>
           <span className={css.text}>{line.text}</span>
           {canEdit && <FlagOutlinedIcon className={widget.target ? css.flagSet : css.flag} />}
         </button>
@@ -239,7 +249,7 @@ const useStyles = makeStyles(theme => ({
   bad: { color: '#FF5C5C' },
   stale: { color: theme.colors.ORANGE },
   steady: { color: '#ffffff80' },
-  word: { flex: 'none', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 11 },
+  explain: { marginTop: 4, opacity: 0.7 },
   text: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   flag: { flex: 'none', fontSize: 13, opacity: 0 },
   flagSet: { flex: 'none', fontSize: 13, opacity: 0.8 },

@@ -33,6 +33,10 @@ const goalForChart = (target, kind, by) => {
   return target * days / AVERAGE_MONTH_DAYS;
 };
 
+// Above the goal is the same yellow on every card, so a beaten goal reads the
+// same way across the whole dashboard.
+const ABOVE_GOAL = '#F5C542';
+
 // The goal line is the chart's own colour, washed towards white, so it reads as
 // part of the card rather than a mark scribbled over it.
 const lighten = (hex, amount = 0.45) => {
@@ -95,8 +99,7 @@ const StandardChart = (props) => {
   const DynamicChart = DynamicCharts.find(x => x.name === chartSettings.type).component;
   const DynamicChartElement = DynamicChartElements.find(x => x.name === chartSettings.type).component;
   const strokeWidth = chartSettings.type === 'bar' ? 0 : 2;
-  // A bar that beats the goal is split there, with the part above it in the
-  // goal line's lighter shade, so good days stand out at a glance.
+  // A bar that beats the goal is split there, so good days stand out at a glance.
   const splitAtGoal = goal && chartSettings.type === 'bar';
   if (splitAtGoal) {
     workData = workData.map(x => ({ ...x,
@@ -126,7 +129,7 @@ const StandardChart = (props) => {
         <CartesianGrid />
         {splitAtGoal ? [
           <Bar key="base" isAnimationActive={false} dataKey="base" stackId="goal" fill={fillType} strokeWidth={0} />,
-          <Bar key="over" isAnimationActive={false} dataKey="over" stackId="goal" fill={lighten(color)} strokeWidth={0} />
+          <Bar key="over" isAnimationActive={false} dataKey="over" stackId="goal" fill={ABOVE_GOAL} strokeWidth={0} />
         ] : (
           <DynamicChartElement isAnimationActive={false} type="monotone" dataKey="value"
             dot={showDots ? { stroke: color, fill: 'white', fillOpacity: 1, strokeWidth: 2, r: 4.2 } : null}
