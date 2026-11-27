@@ -21,7 +21,9 @@ const fetchIt = (path, fetchOpts = {}, params = null, timeoutInMs = DEFAULT_TIME
   }
   const fetchOptsWithSignal = controller ? { ...fetchOpts, signal: controller.signal } : fetchOpts;
   return fetch(url, fetchOptsWithSignal)
-    .then((res) => res.json())
+    // Keep the HTTP status on a parse failure: an HTML error page (a firewall's 403,
+    // a 404) is otherwise indistinguishable from an unreachable host.
+    .then((res) => res.json().catch(err => { err.status = res.status; throw err; }))
     .catch(err => { 
       if (err.name === 'AbortError') {
         throw new FriendlyError(`Timeout with the service (${timeoutInMs / 1000}s max).`);

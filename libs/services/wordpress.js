@@ -91,6 +91,11 @@ class WordPressService {
 			if (err instanceof FriendlyError) {
 				throw err;
 			}
+			// Kinsta's edge once blocked our server's IP on its own: every request got
+			// a bare HTML 403 and the widget only said it could not reach the plugin.
+			if (err.status === 403) {
+				throw new FriendlyError('The site\'s firewall refused Nekometrics (HTTP 403). Its host may be blocking our server.');
+			}
 			throw new FriendlyError('Could not reach the Nekometrics plugin at that address.');
 		}
 		if (!data) {
